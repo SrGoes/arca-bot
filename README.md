@@ -14,9 +14,7 @@ Bot Discord multipropósito para a organização ARCA relacionada ao jogo Star C
 ### 🔄 Planejadas
 - Sistema de comandos expandido
 - Gerenciamento de eventos
-- Sistema de punições
 - Integração com APIs do Star Citizen
-- Dashboard web
 - Sistema de economia/pontos
 
 ## 🛠️ Instalação e Configuração

@@ -17,6 +17,14 @@ import logging
 from datetime import datetime
 from typing import Optional
 
+# Tentar importar python-dotenv para carregar arquivo .env
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # Se não tiver python-dotenv instalado, apenas continua
+    pass
+
 # Configuração de logging
 logging.basicConfig(
     level=logging.INFO,
@@ -242,21 +250,50 @@ async def info(ctx):
 
 def main():
     """Função principal para executar o bot"""
-    # Verificar se o token está definido
+    
+    # Tentar obter token de diferentes fontes
+    token = None
+    
+    # 1. Tentar variável de ambiente
     token = os.getenv('DISCORD_BOT_TOKEN')
     
+    # 2. Se não encontrou, tentar carregar do arquivo .env manualmente
     if not token:
-        logger.error('Token do bot não encontrado!')
-        logger.error('Defina a variável de ambiente DISCORD_BOT_TOKEN ou modifique o código.')
+        try:
+            with open('.env', 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith('DISCORD_BOT_TOKEN=') and not line.startswith('#'):
+                        token = line.split('=', 1)[1].strip()
+                        break
+        except FileNotFoundError:
+            pass
+    
+    # 3. Verificar se o token foi encontrado
+    if not token:
+        logger.error('❌ Token do bot não encontrado!')
+        logger.error('📝 Soluções possíveis:')
+        logger.error('   1. Defina a variável de ambiente: DISCORD_BOT_TOKEN=seu_token')
+        logger.error('   2. Configure o arquivo .env com: DISCORD_BOT_TOKEN=seu_token')
+        logger.error('   3. Certifique-se de que o python-dotenv está instalado: pip install python-dotenv')
         return
+    
+    # 4. Verificar se o token não está vazio ou é um placeholder
+    if token in ['seu_token_aqui', 'YOUR_BOT_TOKEN_HERE', '']:
+        logger.error('❌ Token inválido ou placeholder!')
+        logger.error('📝 Edite o arquivo .env e substitua "seu_token_aqui" pelo token real do seu bot')
+        return
+    
+    logger.info('✅ Token encontrado! Iniciando bot...')
     
     try:
         # Executar o bot
         bot.run(token)
     except discord.LoginFailure:
-        logger.error('Token de bot inválido!')
+        logger.error('❌ Token de bot inválido! Verifique se o token está correto.')
+        logger.error('🔗 Obtenha um novo token em: https://discord.com/developers/applications')
     except Exception as e:
-        logger.error(f'Erro ao executar o bot: {e}')
+        logger.error(f'❌ Erro ao executar o bot: {e}')
 
 if __name__ == '__main__':
     main()
