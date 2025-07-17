@@ -1,10 +1,10 @@
 # 🚀 ARCA Bot v1.3.7
 **Bot Discord multipropósito para a organização ARCA (Star Citizen)**
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![Discord.py](https://img.shields.io/badge/Discord.py-2.3+-blue.svg)](https://discordpy.readthedocs.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-Passing-green.svg)](tests/)
+[![Architecture](https://img.shields.io/badge/Architecture-Modular-green.svg)](src/)
 
 ---
 
@@ -37,9 +37,11 @@
 - **Sistema de Tickets** - Compra com preços progressivos
 
 ### 🎛️ **Painel de Carteiras**
-- **Ranking Automático** - Top usuários mais ricos
-- **Atualização em Tempo Real** - Dados sempre atualizados
-- **Display Elegante** - Interface visual atrativa
+- **Ranking Completo** - Mostra TODOS os usuários (não apenas top 10)
+- **Persistência Automática** - Sobrevive a reinicializações do bot
+- **Atualização em Tempo Real** - Dados sempre atualizados a cada 5 minutos
+- **Interface Visual** - Embed elegante com estatísticas detalhadas
+- **Recuperação Inteligente** - Sistema recupera painéis após restart
 
 ### 🔒 **Sistema de Permissões**
 - **Hierarquia de Níveis** - Owner > Admin > Discord Admin > Economy Admin > User
@@ -47,36 +49,60 @@
 - **Controle Granular** - Diferentes níveis para diferentes comandos
 
 ### ⚡ **Sistemas de Performance**
-- **Cache Inteligente** - Sistema TTL para otimização
-- **Rate Limiting** - Proteção contra spam
-- **Logs Estruturados** - Sistema de logging avançado
+- **Cache Inteligente** - Sistema TTL com limpeza automática
+- **Rate Limiting** - Proteção avançada contra spam
+- **Logs Estruturados** - Sistema de logging com rotação automática  
 - **Backup Automático** - Proteção de dados a cada 6 horas
+- **Configuração Centralizada** - Sistema JSON + fallbacks inteligentes
 
 ---
 
 ## 🏗️ **Arquitetura**
 
-### 📊 **Padrão de Arquitetura: Modular MVC**
+### 📊 **Padrão de Arquitetura: Modular Enterprise**
 
 ```
-ARCA Bot v1.3.7
+ARCA Bot Architecture
 ├── 🎯 Core Systems (src/core/)
-│   ├── ⚙️ Config Management
-│   ├── 🗄️ Cache System  
-│   ├── 🛡️ Rate Limiting
-│   ├── 🔒 Permissions
-│   └── 🎛️ Wallet Panel
-├── 🧩 Modules (src/modules/)
-│   ├── 💰 Economy System
-│   └── 🎲 Lottery System
-├── 🎮 Commands (src/commands/)
-│   ├── 💳 Economy Commands
-│   ├── 🎯 Lottery Commands
-│   └── 🔧 Basic Commands
-└── 🧪 Testing & Utils
-    ├── 📊 Unit Tests
-    ├── 📝 Documentation
-    └── 🔧 Scripts
+│   ├── ⚙️ Config Management (settings.py)
+│   ├── 🗄️ Cache System (cache.py) 
+│   ├── 🛡️ Rate Limiting (rate_limiter.py)
+│   ├── 🔒 Permissions (permissions.py)
+│   └── 🎛️ Wallet Panel (wallet_panel.py)
+├── 🧩 Business Logic (src/modules/)
+│   ├── 💰 Economy System (economy.py)
+│   └── 🎲 Lottery System (lottery.py)
+├── 🎮 Command Interface (src/commands/)
+│   ├── 💳 Economy Commands (economy.py)
+│   ├── 🎯 Lottery Commands (lottery.py)
+│   └── 🔧 Basic Commands (basic.py)
+├── ⚙️ Configuration (config/)
+│   ├── 📝 Settings Manager (settings.py)
+│   └── 🔧 Bot Config (bot_config.json)
+└── 🧪 Quality & Automation
+    ├── 📊 Unit Tests (tests/)
+    ├── � Build Scripts (scripts/)
+    └── � CI/CD Ready
+```
+
+---
+
+## ⚙️ **Instalação**
+
+### Pré-requisitos
+- Python 3.11 ou superior
+- Git (para clonar o repositório)
+- Discord Bot Token
+
+### 1. Clone o repositório
+```bash
+git clone https://github.com/SrGoes/arca-bot.git
+cd arca-bot
+```
+
+### 2. Instale as dependências
+```bash
+pip install -r requirements.txt
 ```
 
 ### 3. Configure o ambiente
@@ -89,43 +115,36 @@ ARCA Bot v1.3.7
    DISCORD_BOT_TOKEN=seu_token_aqui
    ```
 
-### 4. Configure o servidor Discord
-1. **Crie os canais necessários:**
-   - Categoria `C.O.M.M.S OPS` com canais de voz para ganhar AC
-   - Canal de texto `log-cargos` para logs de cargos
-   - Canal de texto `painel-carteiras` para o painel de carteiras em tempo real
-   - Canal de texto `sorteios` para sorteios (opcional)
+---
 
-2. **Crie os cargos administrativos:**
-   - `ECONOMIA_ADMIN` - Para comandos de economia
-   - `SORTEIO_ADMIN` - Para criar sorteios
-   - `ADMIN` - Para comandos administrativos gerais
-   
-3. **Certifique-se de que o bot tem as seguintes permissões:**
-   - Ver canais
-   - Enviar mensagens
-   - Usar embeds
-   - Ver histórico de mensagens
-   - Conectar e ver canais de voz (para monitorar tempo)
-   - Gerenciar mensagens (para painel de carteiras)
+## 🚀 **Execução**
 
-### 5. Configure o bot (Opcional)
-O bot criará automaticamente um arquivo `config/bot_config.json` com configurações padrão.
-Para personalizar, edite este arquivo conforme necessário.
-
-### 6. Execute os testes (Recomendado)
+### Execução Simples
 ```bash
-# Windows
-run_tests.bat
-
-# Linux/Mac
-python tests/test_bot.py
+python run.py
 ```
 
-### 7. Execute o bot
+### Com Ambiente Virtual (Recomendado)
 ```bash
-python bot.py
+# Criar ambiente virtual
+python -m venv venv
+
+# Ativar (Windows)
+venv\Scripts\activate
+
+# Ativar (Linux/Mac)  
+source venv/bin/activate
+
+# Instalar dependências
+pip install -r requirements.txt
+
+# Executar bot
+python run.py
 ```
+
+---
+
+## 📊 **Comandos**
 
 ## 🔧 Configuração do Bot Discord
 
@@ -148,62 +167,122 @@ Use este link para convidar o bot (substitua CLIENT_ID pelo ID da sua aplicaçã
 https://discord.com/api/oauth2/authorize?client_id=CLIENT_ID&permissions=3165184&scope=bot
 ```
 
-## 📁 Estrutura do Projeto
+## 📁 **Estrutura do Projeto**
 
 ```
 arca-bot/
-├── bot.py              # Arquivo principal do bot (refatorado)
-├── economy.py          # Sistema de economia (Arca Coins)
-├── lottery.py          # Sistema de sorteios
-├── requirements.txt    # Dependências Python (atualizadas)
-├── .env.example       # Exemplo de variáveis de ambiente
-├── .gitignore         # Arquivos ignorados pelo Git
-├── README.md          # Este arquivo
-├── LICENSE            # Licença MIT
-├── run_tests.bat      # Script para executar testes
-├── config/            # 🆕 Sistema de configuração
-│   ├── settings.py    # Gerenciador de configurações
-│   └── bot_config.json # Configurações do bot
-├── utils/             # 🆕 Utilitários centralizados
-│   ├── cache.py       # Sistema de cache
-│   ├── rate_limiter.py # Rate limiting
-│   ├── permissions.py # Sistema de permissões
-│   └── wallet_panel.py # Painel de carteiras
-├── tests/             # 🆕 Testes unitários
-│   └── test_bot.py    # Suite de testes
-├── economy_data.json  # Dados de economia (criado automaticamente)
-├── lottery_data.json  # Dados de sorteios (criado automaticamente)
-├── backups/           # Pasta de backups automáticos
-└── bot.log            # Logs do bot (criado automaticamente)
+├── 📁 config/              # Sistema de configuração centralizado
+│   ├── settings.py         # Gerenciador de configurações
+│   └── bot_config.json     # Configurações do bot
+├── 📁 src/                 # Código fonte modular
+│   ├── 📁 commands/        # Comandos organizados por categoria
+│   │   ├── basic.py        # Comandos básicos (ping, info, help)
+│   │   ├── economy.py      # Comandos de economia
+│   │   └── lottery.py      # Comandos de sorteio
+│   ├── 📁 core/            # Sistemas centrais
+│   │   └── 📁 utils/       # Utilitários
+│   │       ├── cache.py           # Sistema de cache
+│   │       ├── permissions.py     # Sistema de permissões
+│   │       ├── rate_limiter.py    # Rate limiting
+│   │       └── wallet_panel.py    # Painel de carteiras
+│   ├── 📁 modules/         # Lógica de negócio
+│   │   ├── economy.py      # Sistema de economia
+│   │   └── lottery.py      # Sistema de sorteios
+│   └── main.py             # Entry point principal
+├── 📁 tests/               # Suíte de testes
+│   ├── test_bot.py         # Testes principais
+│   ├── test_config.py      # Testes de configuração
+│   └── test_new_structure.py # Testes da nova estrutura
+├── 📁 scripts/             # Scripts de automação
+│   ├── setup.bat          # Setup Windows
+│   ├── setup.sh           # Setup Linux/Mac
+│   └── test_installation.bat # Teste de instalação
+├── 📁 data/                # Dados persistentes (criados automaticamente)
+│   ├── economy_data.json   # Dados de economia
+│   ├── lottery_data.json   # Dados de sorteios
+│   └── panel_data.json     # Dados do painel (persistência)
+├── 📁 backups/             # Backups automáticos
+├── 📁 logs/                # Logs do sistema
+├── run.py                  # Launcher principal
+├── requirements.txt        # Dependências Python
+├── pyproject.toml          # Configuração do projeto
+├── .env.example           # Exemplo de variáveis de ambiente
+├── .gitignore             # Arquivos ignorados pelo Git
+└── README.md              # Este arquivo
 ```
 
-## 🎯 Como Funciona
+---
 
-### Monitoramento de Cargos
-O bot utiliza o evento `on_member_update` para detectar quando um membro recebe um novo cargo:
+## 🔧 **Configuração**
 
-1. **Detecção**: Compara os cargos antes e depois da atualização
-2. **Filtro**: Ignora remoções de cargo, foca apenas em adições
-3. **Log**: Envia uma mensagem formatada no canal `log-cargos`
-4. **Formato**: Embed elegante com informações do membro e cargo
+### Configuração Automática
+O bot criará automaticamente um arquivo `config/bot_config.json` com configurações padrão na primeira execução.
 
-### Sistema de Economia (Arca Coins)
-Sistema completo de moeda virtual para a organização:
+### Canais Necessários
+1. **Categoria**: `C.O.M.M.S OPS` com canais de voz para ganhar AC
+2. **Canal**: `log-cargos` para logs de cargos  
+3. **Canal**: `painel-carteiras` para o painel de carteiras em tempo real
+4. **Canal**: `sorteios` para sorteios (opcional)
 
+### Cargos Administrativos
+- `ECONOMIA_ADMIN` - Para comandos de economia
+- `SORTEIO_ADMIN` - Para criar sorteios  
+- `ADMIN` - Para comandos administrativos gerais
+
+### Permissões do Bot
+- Ver canais e histórico de mensagens
+- Enviar mensagens e usar embeds
+- Conectar e ver canais de voz (monitoramento)
+- Gerenciar mensagens (painel de carteiras)
+
+---
+
+## 📚 **Documentação**
+
+### Como Funciona
+
+#### Sistema de Economia (Arca Coins)
 1. **Ganho por Tempo**: 20 AC por hora em canais da categoria "C.O.M.M.S OPS"
 2. **Recompensa Diária**: 70-100 AC com comando `!diario` (precisa estar em canal de voz válido)
 3. **Comandos Admin**: Distribuir AC para todos na call ou pagar usuários específicos
 4. **Persistência**: Dados salvos em JSON com backup automático
 
-### Sistema de Sorteios
-Interface completa para sorteios organizacionais:
-
+#### Sistema de Sorteios
 1. **Criação**: Admins criam sorteios com nome e valor base do ticket
 2. **Participação**: Usuários compram tickets com AC (preço escalável)
 3. **Sorteio**: Sistema justo que sorteia baseado na quantidade de tickets
 4. **Segurança**: Reembolso automático em caso de cancelamento
 
-### Exemplo de Uso - Economia
+#### Sistema de Painel de Carteiras
+1. **Atualização Automática**: A cada 5 minutos no canal configurado
+2. **Ranking Completo**: Mostra todos os usuários (não limitado)
+3. **Persistência**: Sobrevive a reinicializações do bot
+4. **Estatísticas**: Total em circulação, usuários ativos, distribuição
+
+### Configuração do Discord Bot
+
+#### Criando o Bot
+1. Acesse o [Discord Developer Portal](https://discord.com/developers/applications)
+2. Clique em "New Application"
+3. Dê um nome ao seu bot (ex: "ARCA Bot")
+4. Vá para a aba "Bot"
+5. Clique em "Add Bot"
+6. Copie o token e cole no arquivo `.env`
+
+#### Intents Necessários
+Certifique-se de habilitar os seguintes intents no Developer Portal:
+- ✅ Server Members Intent
+- ✅ Message Content Intent
+
+#### Convite do Bot
+Use este link para convidar o bot (substitua CLIENT_ID pelo ID da sua aplicação):
+```
+https://discord.com/api/oauth2/authorize?client_id=CLIENT_ID&permissions=3165184&scope=bot
+```
+
+### Exemplos de Uso
+
+#### Economia
 ```
 # Usuário entra em canal "Ops Alpha" (categoria C.O.M.M.S OPS)
 # Após 1 hora: +20 AC automático
@@ -215,7 +294,7 @@ Interface completa para sorteios organizacionais:
 !saldo → Saldo: 105 AC | Total Ganho: 105 AC | Tempo em Voz: 60 min
 ```
 
-### Exemplo de Uso - Sorteio
+#### Sorteio
 ```
 # Admin cria sorteio
 !criarsorteio Nave Aurora | 50
@@ -229,79 +308,118 @@ Interface completa para sorteios organizacionais:
 # Sistema escolhe vencedor baseado em probabilidade por tickets
 ```
 
-### Exemplo de Mensagem de Log
-```
-🎉 Novo Cargo Atribuído
-João recebeu o cargo Piloto!
+---
 
-Membro: @João
-        João#1234
-Cargo:  @Piloto
-        Piloto
-Servidor: ARCA Organization
-```
+## 🐛 **Troubleshooting**
 
-## 🤝 Contribuindo
+### Bot não responde
+- Verifique se o token está correto no arquivo `.env`
+- Certifique-se de que o bot está online no servidor
+- Verifique as permissões do bot
+
+### Canal log-cargos não encontrado
+- Crie um canal com o nome exato `log-cargos`
+- Verifique se o bot tem permissão para ver e enviar mensagens no canal
+
+### Painel de carteiras não funciona
+- Crie um canal com o nome exato `painel-carteiras`
+- Verifique se o bot tem permissão para gerenciar mensagens
+- Verifique se os dados do painel estão sendo salvos em `data/panel_data.json`
+
+### Erros de intents
+- Habilite "Server Members Intent" no Discord Developer Portal
+- Habilite "Message Content Intent" no Discord Developer Portal
+- Reinicie o bot após habilitar os intents
+
+---
+
+## 📊 **Logs**
+
+O bot mantém logs detalhados em:
+- **Console**: Saída em tempo real
+- **Arquivo**: Rotação automática em `logs/`
+
+Níveis de log:
+- `INFO`: Operações normais
+- `WARNING`: Situações que merecem atenção
+- `ERROR`: Erros que impedem operações
+
+---
+
+## 🔒 **Segurança**
+
+- ⚠️ **NUNCA** compartilhe seu token do bot
+- 🔐 Use arquivos `.env` para configurações sensíveis
+- 🛡️ Mantenha as dependências atualizadas
+- 🔍 Monitore os logs regularmente
+
+---
+
+## 🤝 **Contribuindo**
 
 1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+3. Commit suas mudanças (`git commit -m 'feat: adiciona nova funcionalidade'`)
 4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
 5. Abra um Pull Request
 
-## 📝 Comandos Disponíveis
-
-### 🔧 Comandos Básicos
+### 🔧 **Comandos Básicos**
 | Comando | Descrição |
 |---------|-----------|
 | `!ping` | Testa a latência do bot |
 | `!info` | Mostra informações sobre o bot |
 | `!help` | Lista todos os comandos disponíveis |
+| `!desligar` | Desliga o bot de forma segura | Admin |
 
-### 💰 Comandos de Economia
+### 💰 **Comandos de Economia**
 | Comando | Descrição | Permissão |
 |---------|-----------|-----------|
 | `!saldo` | Mostra seu saldo de AC, total ganho e tempo em voz | Todos |
-| `!diario` | Recompensa diária | Todos |
-
-### 🎲 Comandos de Sorteio
-| Comando | Descrição | Permissão |
-|---------|-----------|-----------|
-| Botões: 🎲 Sortear, 🎫 Comprar, ❌ Cancelar | Interact com sorteios criados por admins | Todos |
-
-### 📊 Comandos de Painel
-| Comando | Descrição | Permissão |
-|---------|-----------|-----------|
-| `!painel status` | Ver status do sistema de painel | Todos |
-| `!painel config` | Ver configuração atual | Todos |
-| `!painel atualizar` | Forçar atualização do painel | Admin |
-| `!painel criar` | Criar painel no canal configurado | Admin |
-
-### 👑 Comandos Administrativos
-| Comando | Descrição | Permissão |
-|---------|-----------|-----------|
+| `!diario` | Recompensa diária (70-100 AC) | Todos |
 | `!distribuir <valor>` | Distribui AC para todos na mesma call | Economy Admin |
 | `!pagar <@user> <valor>` | Gera e paga AC para um usuário específico | Economy Admin |
 | `!remover <@user> <valor> [motivo]` | Remove AC de um usuário específico | Economy Admin |
+
+### 🎲 **Comandos de Sorteio**
+| Comando | Descrição | Permissão |
+|---------|-----------|-----------|
 | `!criarsorteio Nome \| Valor` | Cria um sorteio com botões interativos | Lottery Admin |
-| `!cache [ação]` | Gerencia o sistema de cache | Admin |
-| `!desligar` | Desliga o bot de forma segura | Admin |
+| Botões: 🎲 Sortear, 🎫 Comprar, ❌ Cancelar | Interação com sorteios criados | Todos |
 
-**Botões do Sorteio:**
-- 🎲 **Sortear**: Realiza o sorteio entre os participantes
-- 🎫 **Comprar**: Compra um ticket com AC (preço escalável)
-- ❌ **Cancelar**: Cancela o sorteio e reembolsa participantes
+### 🎛️ **Sistema de Painel**
+| Recurso | Descrição |
+|---------|-----------|
+| **Painel Automático** | Atualização a cada 5 minutos no canal `painel-carteiras` |
+| **Ranking Completo** | Mostra TODOS os usuários (não apenas top 10) |
+| **Persistência** | Sobrevive a reinicializações do bot |
+| **Estatísticas** | Total em circulação, usuários ativos, etc. |
 
-**Comando de Administração:**
-- `!desligar` (aliases: `!shutdown`, `!off`): Desliga o bot de forma segura, mostrando estatísticas da sessão e uptime
-
-### ⚡ Sistema Automático
+### ⚡ **Sistemas Automáticos**
 - **Ganho por Voz**: 20 AC por hora em canais da categoria "C.O.M.M.S OPS"
 - **Log de Cargos**: Mensagens automáticas quando membros recebem novos cargos
-- **Painel de Carteiras**: Atualização automática a cada 5 minutos com ranking e estatísticas
 - **Backup**: Backup automático dos dados a cada 6 horas
 - **Rate Limiting**: Proteção automática contra spam de comandos
 - **Cache**: Sistema de cache para melhor performance
+
+---
+
+## 🧪 **Testes**
+
+### Executar Testes
+```bash
+# Windows
+run_tests.bat
+
+# Linux/Mac  
+python -m pytest tests/ -v
+```
+
+### Estrutura de Testes
+- `tests/test_bot.py` - Testes dos sistemas principais
+- `tests/test_config.py` - Testes de configuração
+- `tests/test_new_structure.py` - Testes da nova arquitetura
+
+**⚠️ Nota:** Alguns testes precisam ser atualizados para a nova estrutura modular.
 
 ## 🐛 Troubleshooting
 
@@ -314,20 +432,30 @@ Servidor: ARCA Organization
 - Crie um canal com o nome exato `log-cargos`
 - Verifique se o bot tem permissão para ver e enviar mensagens no canal
 
+### Painel de carteiras não funciona
+- Crie um canal com o nome exato `painel-carteiras`
+- Verifique se o bot tem permissão para gerenciar mensagens
+- Verifique se os dados do painel estão sendo salvos em `data/panel_data.json`
+
 ### Erros de intents
 - Habilite "Server Members Intent" no Discord Developer Portal
+- Habilite "Message Content Intent" no Discord Developer Portal
 - Reinicie o bot após habilitar os intents
+
+---
 
 ## 📊 Logs
 
 O bot mantém logs detalhados em:
 - **Console**: Saída em tempo real
-- **Arquivo**: `bot.log` (rotação automática)
+- **Arquivo**: Rotação automática em `logs/`
 
 Níveis de log:
 - `INFO`: Operações normais
 - `WARNING`: Situações que merecem atenção
 - `ERROR`: Erros que impedem operações
+
+---
 
 ## 🔒 Segurança
 
@@ -336,9 +464,23 @@ Níveis de log:
 - 🛡️ Mantenha as dependências atualizadas
 - 🔍 Monitore os logs regularmente
 
+---
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
+3. Commit suas mudanças (`git commit -m 'feat: adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
+5. Abra um Pull Request
+
+---
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
 
 ## 🌟 Organização ARCA
 
@@ -347,4 +489,3 @@ Este bot foi desenvolvido para a organização ARCA no universo de Star Citizen.
 ---
 
 **Desenvolvido com ❤️ pela comunidade ARCA**
-Multipurpose Discord bot for ARCA, a Star Citizen organization. Handles role tracking, moderation, and operation planning. Built to support community management, events, and future automation needs
