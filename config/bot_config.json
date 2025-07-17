@@ -1,0 +1,59 @@
+{
+  "economy": {
+    "voice_channels_category": "C.O.M.M.S OPS",
+    "ac_per_hour": 20,
+    "daily_reward_min": 70,
+    "daily_reward_max": 100,
+    "admin_role_name": "ECONOMIA_ADMIN",
+    "min_voice_time_for_reward": 5,
+    "rate_limit_daily": 1,
+    "rate_limit_commands": 5
+  },
+  "lottery": {
+    "admin_role_name": "SORTEIO_ADMIN",
+    "channel_name": "sorteios",
+    "max_ticket_price_multiplier": 2.0,
+    "rate_limit_buy": 10
+  },
+  "general": {
+    "log_channel_name": "log-cargos",
+    "wallet_panel_channel": "painel-carteiras",
+    "command_prefix": "!",
+    "backup_interval_hours": 6,
+    "max_backups": 10,
+    "status_message": "Star Citizen | ARCA Org"
+  },
+  "permissions": {
+    "admin_roles": [
+      "ADMIN",
+      "Administrador",
+      "Administrator"
+    ],
+    "moderator_roles": [
+      "MODERADOR",
+      "Moderator",
+      "MOD"
+    ],
+    "economy_roles": [
+      "ECONOMIA_ADMIN",
+      "Economy Admin"
+    ],
+    "lottery_roles": [
+      "SORTEIO_ADMIN",
+      "Lottery Admin"
+    ]
+  },
+  "cache": {
+    "enable_cache": true,
+    "cache_ttl": 300,
+    "max_cache_size": 1000,
+    "auto_cleanup_interval": 600
+  },
+  "logging": {
+    "level": "INFO",
+    "file_name": "bot.log",
+    "max_file_size": 10485760,
+    "backup_count": 5,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}

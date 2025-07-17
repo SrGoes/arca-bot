@@ -27,13 +27,15 @@ class EconomySystem:
     
     def __init__(self, bot):
         self.bot = bot
-        self.data_file = 'economy_data.json'
+        self.data_file = os.path.join('data', 'economy_data.json')
         self.backup_dir = 'backups'
-        self.voice_channels_category = "C.O.M.M.S OPS"  # Categoria onde estão os canais de voz
-        self.ac_per_hour = 20  # Arca Coins por hora
-        self.daily_reward_min = 70
-        self.daily_reward_max = 100
-        self.admin_role_name = "ECONOMIA_ADMIN"  # Será ajustado depois
+        self.config = bot.config.economy  # Usar configuração centralizada
+        
+        # Configurações do config
+        self.voice_channels_category = self.config.voice_channels_category
+        self.ac_per_hour = self.config.ac_per_hour
+        self.daily_reward_min = self.config.daily_reward_min
+        self.daily_reward_max = self.config.daily_reward_max
         
         # Dados em memória
         self.user_data = {}

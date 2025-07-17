@@ -131,3 +131,6 @@ dmypy.json
 # Bot specific files
 bot.log
 *.log
+economy_data.json
+lottery_data.json
+panel_data.json

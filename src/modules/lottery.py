@@ -27,9 +27,8 @@ class LotterySystem:
     def __init__(self, bot, economy_system):
         self.bot = bot
         self.economy = economy_system
-        self.data_file = 'lottery_data.json'
-        self.admin_role_name = "SORTEIO_ADMIN"  # Será ajustado depois
-        self.lottery_channel_name = "sorteios"  # Será ajustado depois
+        self.data_file = os.path.join('data', 'lottery_data.json')
+        self.config = bot.config.lottery  # Usar configuração centralizada
         
         # Dados em memória
         self.active_lotteries = {}  # {message_id: lottery_data}
@@ -63,7 +62,7 @@ class LotterySystem:
     
     def has_admin_role(self, member: discord.Member) -> bool:
         """Verifica se o membro pode criar sorteios"""
-        return any(role.name == self.admin_role_name for role in member.roles)
+        return any(role.name == self.config.admin_role_name for role in member.roles)
     
     def calculate_next_ticket_price(self, base_price: int, user_tickets_count: int) -> int:
         """Calcula o preço do próximo ticket para um usuário específico: 1.1^(qty) * base_price"""
@@ -75,14 +74,6 @@ class LotterySystem:
             title="🎲 Sorteio ARCA",
             description=f"**{lottery_data['name']}**",
             color=discord.Color.gold()
-        )
-        
-        total_tickets = sum(len(tickets) for tickets in lottery_data['participants'].values())
-        
-        embed.add_field(
-            name="🎫 Total de Tickets",
-            value=str(total_tickets),
-            inline=True
         )
         
         embed.add_field(
