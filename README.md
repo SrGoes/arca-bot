@@ -1,9 +1,9 @@
-# 🚀 ARCA Bot v1.3.7
+# 🚀 ARCA Bot v1.3.8
 
 **Bot Discord multipropósito para a organização ARCA (Star Citizen)**
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![Discord.py](https://img.shields.io/badge/Discord.py-2.3+-blue.svg)](https://discordpy.readthedocs.io/)
+[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://python.org)
+[![Discord.py](https://img.shields.io/badge/Discord.py-2.5+-blue.svg)](https://discordpy.readthedocs.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Architecture](https://img.shields.io/badge/Architecture-Modular-green.svg)](src/)
 
@@ -29,7 +29,7 @@ Bot Discord avançado desenvolvido especificamente para a organização ARCA no 
 
 ### 💰 **Sistema de Economia**
 - **Arca Coins (AC)** - Moeda virtual da organização
-- **Recompensas por Voz** - 20 AC/hora por tempo em canais C.O.M.M.S OPS
+- **Recompensas por Voz** - 20 AC/hora (1 AC a cada 3 minutos) em canais C.O.M.M.S OPS
 - **Daily Rewards** - Bônus diário de 70-100 AC
 - **Comandos Administrativos** - Distribuição e remoção de moedas
 - **Persistência** - Dados salvos com backup automático a cada 6 horas
@@ -62,7 +62,7 @@ Bot Discord avançado desenvolvido especificamente para a organização ARCA no 
 - **Configuração Centralizada** - Sistema JSON + fallbacks inteligentes
 
 ### 🤖 **Sistemas Automáticos**
-- **Ganho por Voz** - 20 AC por hora em canais da categoria "C.O.M.M.S OPS"
+- **Ganho por Voz** - 20 AC por hora (1 AC a cada 3 minutos) em canais da categoria "C.O.M.M.S OPS"
 - **Log de Cargos** - Mensagens automáticas quando membros recebem novos cargos
 - **Monitoramento de Status** - Detecção de entrada/saída de canais de voz
 - **Painel Automático** - Atualização automática do ranking de carteiras
@@ -102,7 +102,7 @@ ARCA Bot Architecture
 ## ⚙️ **Instalação e Configuração**
 
 ### **Pré-requisitos**
-- Python 3.8 ou superior
+- Python 3.13 ou superior
 - Git (para clonar o repositório)
 - Discord Bot Token
 
@@ -246,7 +246,8 @@ chmod +x scripts/setup.sh
 #### **Sistema de Economia**
 ```bash
 # Usuário entra em canal "Ops Alpha" (categoria C.O.M.M.S OPS)
-# Após 1 hora: +20 AC automático
+# A cada 3 minutos: +1 AC automático
+# Após 1 hora: +20 AC total
 
 # Comando diário estando no canal
 !diario → "Você recebeu 85 AC! 🪙"
@@ -401,7 +402,7 @@ O bot mantém logs detalhados em:
 5. Abra um Pull Request
 
 ### **Padrões de Código**
-- Use **Python 3.8+** e siga PEP 8
+- Use **Python 3.13+** e siga PEP 8
 - Documente todas as funções e classes
 - Adicione testes para novas funcionalidades
 - Use type hints sempre que possível
@@ -451,9 +452,9 @@ Para mais informações sobre a organização ARCA, visite nossos canais oficiai
 
 ## 📈 **Estatísticas do Projeto**
 
-- **Versão**: 1.3.7
-- **Linguagem**: Python 3.8+
-- **Framework**: Discord.py 2.3+
+- **Versão**: 1.3.8
+- **Linguagem**: Python 3.13+
+- **Framework**: Discord.py 2.5+
 - **Arquitetura**: Modular Enterprise
 - **Licença**: MIT
 - **Status**: Ativo e em desenvolvimento

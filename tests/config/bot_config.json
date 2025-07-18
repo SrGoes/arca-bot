@@ -1,11 +1,11 @@
 {
   "economy": {
     "voice_channels_category": "C.O.M.M.S OPS",
-    "ac_per_hour": 40,
+    "ac_per_hour": 20,
     "daily_reward_min": 70,
     "daily_reward_max": 100,
     "admin_role_name": "ECONOMIA_ADMIN",
-    "min_voice_time_for_reward": 1,
+    "min_voice_time_for_reward": 3,
     "rate_limit_daily": 1,
     "rate_limit_commands": 5,
     "delete_admin_commands": true

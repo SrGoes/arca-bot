@@ -1,12 +1,4 @@
 @echo off
-echo 🎯 ARCA Bot - Instalação e Configuração
-echo.
-
-:: Ir para a pasta do projeto (pasta pai)
-cd /d "%~dp0.."
-
-echo Verificando Python...
-python --version
 echo 🚀 ARCA Bot - Instalação e Configuração
 echo.
 
@@ -18,6 +10,8 @@ python --version
 if %errorlevel% neq 0 (
     echo ❌ Python não encontrado! Por favor, instale Python 3.8 ou superior.
     pause
+    exit /b 1
+)
     exit /b 1
 )
 

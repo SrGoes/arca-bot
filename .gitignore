@@ -1,3 +1,10 @@
+# ================================================================
+# ARCA Bot - .gitignore
+# ================================================================
+
+# ================================================================
+# Python
+# ================================================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -101,6 +108,9 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# ================================================================
+# Virtual Environments
+# ================================================================
 # Environments
 .env
 .venv
@@ -128,9 +138,73 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Bot specific files
+# ================================================================
+# Bot Specific - ARCA Bot Configuration
+# ================================================================
+# Bot runtime files
 bot.log
 *.log
+logs/
+data/
+backups/
+
+# ================================================================
+# Security - CRITICAL: Never commit sensitive data
+# ================================================================
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.token
+*.key
+*.pem
+config.json
+secrets.json
+
+# Bot data files
 economy_data.json
 lottery_data.json
 panel_data.json
+economy_backup_*.json
+
+# ================================================================
+# Development Environment
+# ================================================================
+# VS Code settings (optional - keep workspace settings private)
+.vscode/settings.json
+.vscode/launch.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Debug files
+debug_*.py
+debug_*.log
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# ================================================================
+# Operating System Files
+# ================================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+desktop.ini
+ehthumbs.db
+Thumbs.db
+$RECYCLE.BIN/
+
+# Linux
+*~
