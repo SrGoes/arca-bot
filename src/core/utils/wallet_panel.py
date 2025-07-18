@@ -321,7 +321,7 @@ class WalletPanel:
                 total_earned=user_data.get("total_earned", 0),
                 voice_time=user_data.get("voice_time", 0),
                 last_activity=(
-                    datetime.fromisoformat(user_data.get("last_daily"))
+                    datetime.fromisoformat(user_data.get("last_daily")).replace(tzinfo=timezone.utc)
                     if user_data.get("last_daily")
                     else datetime.now(timezone.utc)
                 ),

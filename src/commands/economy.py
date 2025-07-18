@@ -143,7 +143,7 @@ def setup_economy_commands(bot):
 
         # Verificar se já recebeu hoje
         if user_data["last_daily"]:
-            last_daily = datetime.fromisoformat(user_data["last_daily"])
+            last_daily = datetime.fromisoformat(user_data["last_daily"]).replace(tzinfo=timezone.utc)
             if (datetime.now(timezone.utc) - last_daily).days < 1:
                 # Calcular próximo reset (próximo dia às 00:00)
                 next_reset = (last_daily + timedelta(days=1)).replace(
