@@ -134,12 +134,12 @@ def setup_basic_commands(bot):
             inline=False,
         )
 
-        # Comandos de Painel
+        # Comandos de Painel (Administrativos)
         embed.add_field(
-            name="📊 Painel",
+            name="📊 Painel (Admin)",
             value=(
-                "`!painel status` - Status do sistema\n"
-                "`!painel config` - Ver configuração\n"
+                "`!painel status` - Status do sistema (Admin)\n"
+                "`!painel config` - Ver configuração (Admin)\n"
                 "`!painel atualizar` - Forçar atualização (Admin)\n"
                 "`!painel criar` - Criar painel (Admin)"
             ),
