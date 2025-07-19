@@ -207,14 +207,17 @@ class LotterySystem:
         self.bot = bot
         self.economy = economy_system
         self.data_file = os.path.join("data", "lottery_data.json")
+        self.history_file = os.path.join("data", "lottery_history.json")
         self.config = bot.config.lottery  # Usar configuração centralizada
 
         # Dados em memória
         self.active_lotteries = {}  # {message_id: lottery_data}
+        self.lottery_history = []  # Lista de sorteios finalizados
         self.admin_panels = {}  # {lottery_id: {'message': Message, 'user_id': int}}
 
         # Carregar dados
         self.load_data()
+        self.load_history()
 
     def load_data(self):
         """Carrega dados dos sorteios ativos"""
@@ -240,6 +243,80 @@ class LotterySystem:
             logger.debug("Dados de sorteio salvos")
         except Exception as e:
             logger.error(f"Erro ao salvar dados de sorteio: {e}")
+
+    def load_history(self):
+        """Carrega histórico de sorteios"""
+        try:
+            if os.path.exists(self.history_file):
+                with open(self.history_file, "r", encoding="utf-8") as f:
+                    self.lottery_history = json.load(f)
+                logger.info(
+                    f"Histórico de sorteios carregado: {len(self.lottery_history)} sorteios"
+                )
+            else:
+                self.lottery_history = []
+                logger.info("Arquivo de histórico de sorteios não encontrado, criando novo")
+        except Exception as e:
+            logger.error(f"Erro ao carregar histórico de sorteios: {e}")
+            self.lottery_history = []
+
+    def save_history(self):
+        """Salva histórico de sorteios"""
+        try:
+            os.makedirs(
+                (
+                    os.path.dirname(self.history_file)
+                    if os.path.dirname(self.history_file)
+                    else "."
+                ),
+                exist_ok=True,
+            )
+            with open(self.history_file, "w", encoding="utf-8") as f:
+                json.dump(self.lottery_history, f, indent=2, ensure_ascii=False)
+            logger.debug("Histórico de sorteios salvo")
+        except Exception as e:
+            logger.error(f"Erro ao salvar histórico de sorteios: {e}")
+
+    def add_to_history(self, lottery_data: Dict):
+        """Adiciona sorteio ao histórico"""
+        try:
+            # Preparar dados para o histórico
+            history_entry = {
+                "id": lottery_data.get("id", "unknown"),
+                "name": lottery_data.get("name", "Sem nome"),
+                "creator_id": lottery_data.get("creator_id"),
+                "created_at": lottery_data.get("created_at"),
+                "base_price": lottery_data.get("base_price", 0),
+                "status": "finalizado" if lottery_data.get("winner") else "cancelado",
+                "participants_count": len(lottery_data.get("participants", {})),
+                "total_tickets": sum(
+                    len(tickets) for tickets in lottery_data.get("participants", {}).values()
+                ),
+                "total_value": sum(
+                    sum(ticket["price"] for ticket in tickets)
+                    for tickets in lottery_data.get("participants", {}).values()
+                ),
+                "winner": lottery_data.get("winner"),
+                "finished_at": lottery_data.get("winner", {}).get("drawn_at") or lottery_data.get("cancelled_at"),
+                "channel_id": lottery_data.get("channel_id"),
+                "guild_id": lottery_data.get("guild_id")
+            }
+            
+            # Adicionar ao histórico
+            self.lottery_history.append(history_entry)
+            
+            # Manter apenas os últimos X sorteios (configurável)
+            max_entries = getattr(self.config, 'max_history_entries', 50)
+            if len(self.lottery_history) > max_entries:
+                self.lottery_history = self.lottery_history[-max_entries:]
+            
+            # Salvar histórico
+            self.save_history()
+            
+            logger.info(f"Sorteio {history_entry['name']} adicionado ao histórico")
+            
+        except Exception as e:
+            logger.error(f"Erro ao adicionar sorteio ao histórico: {e}")
 
     def has_admin_role(self, member: discord.Member) -> bool:
         """Verifica se o membro pode criar sorteios"""
@@ -871,6 +948,9 @@ class AdminLotteryView(discord.ui.View):
 
             await interaction.response.send_message(response_message, ephemeral=True)
 
+            # Adicionar ao histórico
+            self.lottery_system.add_to_history(self.lottery_data)
+
         except Exception as e:
             logger.error(f"Erro ao sortear: {e}")
             await interaction.response.send_message(
@@ -999,6 +1079,9 @@ class AdminLotteryView(discord.ui.View):
             # Marcar como cancelado
             self.lottery_data["cancelled"] = True
             self.lottery_data["cancelled_at"] = datetime.now(timezone.utc).timestamp()
+
+            # Adicionar ao histórico
+            self.lottery_system.add_to_history(self.lottery_data)
 
             # Atualizar dados
             self.lottery_system.active_lotteries[self.lottery_id] = self.lottery_data

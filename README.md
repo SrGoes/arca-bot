@@ -1,4 +1,4 @@
-# 🚀 ARCA Bot v1.3.8
+# 🚀 ARCA Bot v1.5.0
 
 **Bot Discord multipropósito para a organização ARCA (Star Citizen)**
 
@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Architecture](https://img.shields.io/badge/Architecture-Modular-green.svg)](src/)
 
-Bot Discord avançado desenvolvido especificamente para a organização ARCA no universo de Star Citizen. Oferece sistema completo de economia com Arca Coins, sorteios interativos, painel de carteiras em tempo real e sistema robusto de permissões.
+Bot Discord avançado desenvolvido especificamente para a organização ARCA no universo de Star Citizen. Oferece sistema completo de economia com Arca Coins, sorteios interativos, painéis em tempo real, sistema robusto de backup e funcionalidades automáticas avançadas.
 
 ---
 
@@ -30,9 +30,13 @@ Bot Discord avançado desenvolvido especificamente para a organização ARCA no 
 ### 💰 **Sistema de Economia**
 - **Arca Coins (AC)** - Moeda virtual da organização
 - **Recompensas por Voz** - 20 AC/hora (1 AC a cada 3 minutos) em canais C.O.M.M.S OPS
+- **Recompensas por Mensagem** - 1-40 AC após 12 mensagens (cooldown de 45min)
 - **Daily Rewards** - Bônus diário de 70-100 AC
 - **Comandos Administrativos** - Distribuição e remoção de moedas
-- **Persistência** - Dados salvos com backup automático a cada 6 horas
+- **Persistência Avançada** - Dados salvos com backup automático completo a cada 6 horas
+- **Backup Manual Completo** - Comando `!force_backup` para backup de todos os sistemas
+- **DM de Resumo** - Resumo automático por DM ao sair da call
+- **Recuperação de Sessões** - Sistema recupera sessões de voz após restart (até 15min)
 
 ### 🎲 **Sistema de Sorteios**
 - **Criação Dinâmica** - Sorteios com preços configuráveis
@@ -40,6 +44,8 @@ Bot Discord avançado desenvolvido especificamente para a organização ARCA no 
 - **Painel Administrativo** - Controle completo para admins
 - **Sistema de Tickets** - Compra com preços progressivos (1.1x por ticket adicional)
 - **Segurança** - Reembolso automático em caso de cancelamento
+- **Histórico Completo** - Painel de histórico com todos os sorteios
+- **Persistência de Dados** - Sistema completo de backup e recuperação
 
 ### 🎛️ **Painel de Carteiras**
 - **Ranking Completo** - Mostra TODOS os usuários (não apenas top 10)
@@ -47,6 +53,13 @@ Bot Discord avançado desenvolvido especificamente para a organização ARCA no 
 - **Atualização em Tempo Real** - Dados sempre atualizados a cada 5 minutos
 - **Interface Visual** - Embed elegante com estatísticas detalhadas
 - **Recuperação Inteligente** - Sistema recupera painéis após restart
+
+### 📊 **Painel de Histórico de Loterias**
+- **Histórico Completo** - Todos os sorteios realizados ou cancelados
+- **Atualização Automática** - Painel atualiza em tempo real
+- **Múltiplos Servidores** - Suporte para vários servidores
+- **Comandos Admin** - Criação, remoção e status dos painéis
+- **Recuperação de Mensagens** - Sistema inteligente de recuperação após restart
 
 ### 🔒 **Sistema de Permissões**
 - **Hierarquia de Níveis** - Owner > Admin > Discord Admin > Economy Admin > User
@@ -168,6 +181,35 @@ https://discord.com/api/oauth2/authorize?client_id=CLIENT_ID&permissions=3165184
 - Conectar e ver canais de voz (monitoramento)
 - Gerenciar mensagens (painel de carteiras)
 
+### **6. Configurações Avançadas**
+
+#### **Sistema de Recompensas por Mensagem**
+No arquivo `config/settings.py`, você pode personalizar:
+```python
+# EconomyConfig
+message_reward_enabled: bool = True          # Habilitar sistema
+messages_for_reward: int = 12                # Mensagens necessárias
+message_reward_min: int = 1                  # Mínimo de AC
+message_reward_max: int = 40                 # Máximo de AC
+message_reward_cooldown: int = 45            # Cooldown em minutos
+send_voice_summary_dm: bool = True           # Enviar resumo por DM
+```
+
+#### **Sistema de Painel de Loterias**
+```python
+# LotteryConfig
+panel_enabled: bool = True                   # Habilitar painel
+panel_update_interval: int = 300             # Atualização a cada 5min
+show_recent_count: int = 10                  # Sorteios recentes a mostrar
+```
+
+#### **Sistema de Backup**
+```python
+# EconomyConfig
+backup_interval_hours: int = 6               # Backup automático a cada 6h
+max_restart_time_for_recovery: int = 15      # Tempo máx. restart (min)
+```
+
 ---
 
 ## 🚀 **Execução**
@@ -225,11 +267,21 @@ chmod +x scripts/setup.sh
 | `!distribuir <valor>` | Distribui AC para todos na mesma call | Economy Admin |
 | `!pagar <@user> <valor>` | Gera e paga AC para um usuário específico | Economy Admin |
 | `!remover <@user> <valor> [motivo]` | Remove AC de um usuário específico | Economy Admin |
+| `!force_backup` | Força backup completo dos dados | Economy Admin |
+| `!backup_calls` | Força backup apenas do voice tracking | Economy Admin |
+| `!status_calls` | Mostra status das calls ativas | Economy Admin |
 
 ### **🎲 Comandos de Sorteio**
 | Comando | Descrição | Permissão |
 |---------|-----------|-----------|
 | `!criarsorteio Nome \| Valor` | Cria um sorteio com botões interativos | Lottery Admin |
+
+### **📊 Comandos de Painel de Loterias**
+| Comando | Descrição | Permissão |
+|---------|-----------|-----------|
+| `!painel_loteria_status` | Mostra status do painel de histórico | Economy Admin |
+| `!painel_loteria_criar [#canal]` | Cria painel no canal especificado ou atual | Economy Admin |
+| `!painel_loteria_remover` | Remove painel deste servidor | Economy Admin |
 
 **Botões Interativos:**
 - 🎲 **Sortear** - Realiza o sorteio
@@ -238,8 +290,10 @@ chmod +x scripts/setup.sh
 
 ### **🎛️ Sistema de Painel Automático**
 - **Painel de Carteiras** - Atualização automática a cada 5 minutos no canal `painel-carteiras`
+- **Painel de Loterias** - Histórico completo de sorteios com atualização automática
 - **Ranking Completo** - Mostra TODOS os usuários (não apenas top 10)
 - **Estatísticas** - Total em circulação, usuários ativos, distribuição
+- **Recuperação Inteligente** - Painéis sobrevivem a reinicializações
 
 ### **📈 Exemplos de Uso**
 
@@ -269,6 +323,51 @@ chmod +x scripts/setup.sh
 # Admin sorteia quando quiser
 # Sistema escolhe vencedor baseado em probabilidade por tickets
 ```
+
+### **💾 Sistema de Backup e Recuperação**
+
+#### **Backup Automático**
+- **5 tipos de dados** incluídos: economia, voice tracking, painéis, sorteios ativos e histórico
+- Arquivos salvos em `backups/` com timestamp único
+- Rotação automática mantendo 10 versões de cada tipo
+
+#### **Backup Manual**
+```bash
+!force_backup    # Backup completo de todos os sistemas
+!backup_calls    # Apenas backup do voice tracking
+```
+
+#### **Arquivos de Backup Incluídos**
+- `economy_backup_YYYYMMDD_HHMMSS.json` - Dados de economia (saldos, usuários)
+- `voice_tracking_backup_YYYYMMDD_HHMMSS.json` - Dados de voice tracking
+- `panel_data_backup_YYYYMMDD_HHMMSS.json` - **NOVO:** Dados dos painéis (carteiras + loterias)
+- `lottery_data_backup_YYYYMMDD_HHMMSS.json` - **NOVO:** Sorteios ativos
+- `lottery_history_backup_YYYYMMDD_HHMMSS.json` - **NOVO:** Histórico completo de sorteios
+
+#### **Estatísticas do Backup Manual**
+O comando `!force_backup` agora mostra estatísticas completas:
+- 👥 Dados de Usuários
+- 🎤 Sessões de Voz Ativas
+- 📤 Mensagens Trackadas
+- 📊 Painéis Ativos
+- 🎲 Sorteios Ativos
+- ⏰ Timestamp do Backup
+
+#### **Restauração de Backup**
+```bash
+# Para restaurar um backup, copie os arquivos da pasta backups/
+copy "backups\economy_backup_TIMESTAMP.json" "data\economy_data.json"
+copy "backups\panel_data_backup_TIMESTAMP.json" "data\panel_data.json"
+
+# Ou use o comando PowerShell de recuperação:
+python -c "import shutil; shutil.copy('backups/BACKUP_FILE.json', 'data/TARGET_FILE.json')"
+```
+
+### **🔄 Recuperação Após Restart**
+- **Voice Tracking**: Sistema inteligente de recuperação de sessões (até 15min após restart)
+- **Painéis**: Recupera painéis de carteiras e loterias automaticamente
+- **Dados**: Carrega última versão dos dados salvos
+- **Configurações**: Aplica configurações do arquivo `config/settings.py`
 
 ---
 
@@ -304,9 +403,15 @@ arca-bot/
 │   └── test_installation.bat  # Teste de instalação
 ├── 📁 data/                     # Dados persistentes (criados automaticamente)
 │   ├── economy_data.json       # Dados de economia
-│   ├── lottery_data.json       # Dados de sorteios
-│   └── panel_data.json         # Dados do painel (persistência)
+│   ├── lottery_data.json       # Dados de sorteios ativos
+│   ├── lottery_history.json    # Histórico completo de sorteios
+│   └── panel_data.json         # Dados consolidados dos painéis (carteiras + loterias)
 ├── 📁 backups/                  # Backups automáticos (criados automaticamente)
+│   ├── economy_backup_*.json   # Backups de economia (10 versões)
+│   ├── voice_tracking_backup_*.json # Backups de voice tracking (10 versões)
+│   ├── panel_data_backup_*.json     # Backups de painéis (10 versões)
+│   ├── lottery_data_backup_*.json   # Backups de sorteios ativos (10 versões)
+│   └── lottery_history_backup_*.json # Backups de histórico (10 versões)
 ├── 📁 logs/                     # Logs do sistema (criados automaticamente)
 ├── run.py                       # Launcher principal
 ├── requirements.txt             # Dependências Python
@@ -355,6 +460,83 @@ python -c "import discord; print(f'Discord.py v{discord.__version__} OK')"
 - ✅ Certifique-se de que o bot está online no servidor
 - ✅ Verifique as permissões do bot nos canais
 - ✅ Confirme que os intents estão habilitados no Developer Portal
+
+### **Dados corrompidos ou perdidos**
+#### **Restauração de Backup**
+```bash
+# Parar o bot primeiro!
+# Fazer backup atual
+copy "data\economy_data.json" "data\economy_data_manual_backup.json"
+
+# Restaurar backup (substitua pela data desejada)
+copy "data\economy_backup_YYYYMMDD_HHMMSS.json" "data\economy_data.json"
+
+# Reiniciar o bot
+```
+
+#### **Verificar Integridade dos Dados**
+```powershell
+# Testar se o JSON é válido
+Get-Content "data\economy_data.json" | ConvertFrom-Json
+```
+
+### **Voice Tracking não funciona**
+- ✅ Verifique se há canais na categoria "C.O.M.M.S OPS"
+- ✅ Confirme que o bot tem permissão de "Ver Canal de Voz"
+- ✅ Teste com comando `!status_calls` para ver sessões ativas
+- ✅ Força backup com `!backup_calls` se necessário
+
+### **Painel de Carteiras não atualiza**
+- ✅ Verifique se o canal `painel-carteiras` existe
+- ✅ Confirme permissões do bot para editar mensagens
+- ✅ Use comando `!painel_loteria_status` para verificar status
+- ✅ Recrie o painel com `!painel_loteria_criar`
+
+### **Backup Manual de Emergência**
+```bash
+# Usar comando no Discord (admins)
+!force_backup
+
+# Ou copiar manualmente
+copy "data\economy_data.json" "data\emergency_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+```
+
+### **Arquivos de Log**
+Verifique os logs em `logs/bot.log` para erros específicos:
+```bash
+# Ver últimas linhas do log
+Get-Content "logs\bot.log" -Tail 50
+```
+
+### **Comandos de Diagnóstico**
+Comandos específicos para monitoramento e manutenção:
+```bash
+!status_calls               # Status das calls ativas
+!force_backup              # Backup manual completo com estatísticas
+!backup_calls              # Backup só do voice tracking
+!painel_loteria_status     # Status dos painéis de loterias
+```
+
+### **📊 Exemplo de Saída do !force_backup**
+```
+💾 Backup Completo Forçado
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👥 Dados de Usuários: **157** usuários salvos
+🎤 Sessões de Voz: **3** sessões ativas  
+📤 Mensagens Trackadas: **1,242** mensagens
+📊 Painéis Ativos: **2** painéis
+🎲 Sorteios Ativos: **1** sorteios
+⏰ Timestamp: `20250719_100845`
+
+📂 Arquivos de Backup
+✅ Economia
+✅ Voice Tracking  
+✅ Painéis (Carteiras + Loterias)
+✅ Sorteios + Histórico
+
+📁 Localização: `backups/`
+```
 
 ### **Canal log-cargos não encontrado**
 - ✅ Crie um canal com o nome exato `log-cargos`
@@ -452,9 +634,17 @@ Para mais informações sobre a organização ARCA, visite nossos canais oficiai
 
 ## 📈 **Estatísticas do Projeto**
 
-- **Versão**: 1.3.8
+- **Versão**: 1.5.0
 - **Linguagem**: Python 3.13+
 - **Framework**: Discord.py 2.5+
 - **Arquitetura**: Modular Enterprise
 - **Licença**: MIT
 - **Status**: Ativo e em desenvolvimento
+
+### **🆕 Novidades da v1.5.0**
+- ✅ **Sistema de Backup Completo** - Backup de todos os 5 tipos de dados importantes
+- ✅ **Painéis Consolidados** - Sistema unificado para painéis de carteiras e loterias
+- ✅ **Estatísticas Avançadas** - Comando `!force_backup` com informações detalhadas
+- ✅ **Rotação Automática** - Mantém automaticamente 10 versões de cada backup
+- ✅ **Recuperação Aprimorada** - Sistema robusto de recuperação após falhas
+- ✅ **Documentação Consolidada** - README unificado com todas as informações

@@ -30,9 +30,18 @@ class EconomyConfig:
     daily_reward_max: int = 100
     admin_role_name: str = "ECONOMIA_ADMIN"
     min_voice_time_for_reward: int = 3  # minutos (tempo mínimo para receber 1 AC)
+    max_restart_time_for_recovery: int = 15  # minutos (tempo máximo offline para continuar pagando)
     rate_limit_daily: int = 1  # comandos por dia
     rate_limit_commands: int = 5  # comandos por minuto
     delete_admin_commands: bool = True  # Apagar comandos administrativos após execução
+    
+    # Sistema de recompensas por mensagens
+    message_reward_enabled: bool = True  # Habilitar recompensas por mensagem
+    messages_for_reward: int = 12  # Número de mensagens para ganhar recompensa
+    message_reward_min: int = 1  # Mínimo de AC por recompensa de mensagem
+    message_reward_max: int = 40  # Máximo de AC por recompensa de mensagem
+    message_reward_cooldown: int = 45  # Cooldown em minutos entre recompensas
+    send_voice_summary_dm: bool = True  # Enviar resumo por DM ao sair da call
 
 
 @dataclass
@@ -44,6 +53,12 @@ class LotteryConfig:
     max_ticket_price_multiplier: float = 2.0  # Máximo 2x o preço base
     rate_limit_buy: int = 10  # tickets por minuto
     delete_command_after_creation: bool = True  # Apagar comando após criar sorteio
+    
+    # Painel de histórico de sorteios
+    history_panel_channel: str = "painel"  # Canal para o painel
+    history_panel_enabled: bool = True  # Habilitar painel de histórico
+    max_history_entries: int = 10  # Máximo de sorteios no painel
+    panel_update_interval: int = 300  # Intervalo de atualização em segundos (5 min)
 
 
 @dataclass
@@ -51,7 +66,7 @@ class GeneralConfig:
     """Configurações gerais do bot"""
 
     log_channel_name: str = "log-cargos"
-    wallet_panel_channel: str = "painel-carteiras"
+    wallet_panel_channel: str = "painel"
     command_prefix: str = "!"
     backup_interval_hours: int = 6
     max_backups: int = 10

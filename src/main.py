@@ -31,6 +31,7 @@ try:
     import sys
 
     sys.path.insert(0, ".")  # Adicionar diretório raiz ao path
+    sys.path.insert(0, "..")  # Adicionar diretório pai ao path
     from config.settings import config
     from src.core.utils.cache import CacheManager
     from src.core.utils.permissions import (
@@ -38,11 +39,13 @@ try:
         handle_permission_error,
     )
     from src.core.utils.wallet_panel import WalletPanel
+    from src.core.utils.lottery_panel import LotteryPanel
     from src.modules.economy import EconomySystem
     from src.modules.lottery import LotterySystem
     from src.commands.economy import setup_economy_commands
     from src.commands.lottery import setup_lottery_commands
     from src.commands.basic import setup_basic_commands
+    from src.commands.lottery_panel import setup_lottery_panel_commands
 except ImportError as e:
     print(f"❌ Erro ao importar sistemas: {e}")
     print("📝 Certifique-se de que todos os arquivos foram criados corretamente")
@@ -116,6 +119,7 @@ class ARCABot(commands.Bot):
         self.cache_manager = None
         self.permission_manager = None
         self.wallet_panel = None
+        self.lottery_panel = None
 
     async def setup_hook(self):
         """Configurações iniciais do bot"""
@@ -130,6 +134,7 @@ class ARCABot(commands.Bot):
             self.economy = EconomySystem(self)
             self.lottery = LotterySystem(self, self.economy)
             self.wallet_panel = WalletPanel(self, self.economy)
+            self.lottery_panel = LotteryPanel(self, self.lottery)
             logger.info("✅ Sistemas de economia e sorteio inicializados")
         else:
             logger.warning("⚠️ Sistemas de economia/sorteio não disponíveis")
@@ -145,6 +150,7 @@ class ARCABot(commands.Bot):
         setup_economy_commands(self)
         setup_lottery_commands(self)
         setup_basic_commands(self)
+        setup_lottery_panel_commands(self)
         logger.info("✅ Comandos registrados")
 
         logger.info("🎉 Configuração do bot concluída!")
@@ -158,6 +164,11 @@ class ARCABot(commands.Bot):
         if self.wallet_panel and not self.wallet_panel.is_running:
             await self.wallet_panel.start()
             logger.info("✅ Painel de carteiras iniciado")
+
+        # Iniciar painel de loterias
+        if self.lottery_panel and not self.lottery_panel.is_running:
+            await self.lottery_panel.start()
+            logger.info("✅ Painel de loterias iniciado")
 
         # Definir status do bot
         await self.change_presence(
@@ -179,6 +190,15 @@ class ARCABot(commands.Bot):
         """Monitora mudanças de estado de voz para economia"""
         if self.economy:
             await self.economy.on_voice_state_update(member, before, after)
+
+    async def on_message(self, message):
+        """Processa mensagens para recompensas e comandos"""
+        # Processar recompensas por mensagem
+        if self.economy:
+            await self.economy.on_message(message)
+        
+        # Processar comandos normalmente
+        await self.process_commands(message)
 
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         """

@@ -58,10 +58,15 @@ class WalletPanel:
             if os.path.exists(self.panel_data_file):
                 with open(self.panel_data_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    # Os dados serão recarregados na inicialização usando os IDs salvos
-                    logger.info(
-                        f"📂 Dados do painel carregados: {len(data)} servidores"
-                    )
+                    
+                    # Verificar se é o formato antigo (dados diretos) ou novo (estrutura compartilhada)
+                    if "wallet_panels" in data:
+                        # Formato novo
+                        wallet_count = len(data.get("wallet_panels", {}))
+                        logger.info(f"📂 Dados do painel de carteiras carregados: {wallet_count} servidores")
+                    else:
+                        # Formato antigo - será migrado automaticamente no próximo save
+                        logger.info(f"📂 Dados do painel carregados (formato antigo): {len(data)} servidores")
             else:
                 logger.info(
                     "📂 Nenhum arquivo de dados do painel encontrado, será criado automaticamente"
@@ -75,12 +80,21 @@ class WalletPanel:
             # Criar diretório se não existir
             os.makedirs(os.path.dirname(self.panel_data_file), exist_ok=True)
 
-            # Preparar dados para salvar
-            data = {}
+            # Carregar dados existentes para preservar lottery_panels
+            existing_data = {}
+            if os.path.exists(self.panel_data_file):
+                try:
+                    with open(self.panel_data_file, "r", encoding="utf-8") as f:
+                        existing_data = json.load(f)
+                except:
+                    existing_data = {}
+
+            # Preparar dados do wallet panel para salvar
+            wallet_data = {}
             for guild_id, message in self.panel_messages.items():
                 guild = self.bot.get_guild(guild_id)
                 if guild:
-                    data[str(guild_id)] = {
+                    wallet_data[str(guild_id)] = {
                         "guild_name": guild.name,
                         "channel_id": message.channel.id,
                         "channel_name": message.channel.name,
@@ -88,11 +102,15 @@ class WalletPanel:
                         "last_updated": datetime.now(timezone.utc).isoformat(),
                     }
 
+            # Manter estrutura compartilhada
+            final_data = existing_data.copy()
+            final_data["wallet_panels"] = wallet_data
+
             # Salvar no arquivo
             with open(self.panel_data_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+                json.dump(final_data, f, indent=2, ensure_ascii=False)
 
-            logger.info(f"💾 Dados do painel salvos: {len(data)} servidores")
+            logger.info(f"💾 Dados do painel de carteiras salvos: {len(wallet_data)} servidores")
 
         except Exception as e:
             logger.error(f"❌ Erro ao salvar dados do painel: {e}")
@@ -125,8 +143,16 @@ class WalletPanel:
                 with open(self.panel_data_file, "r", encoding="utf-8") as f:
                     saved_data = json.load(f)
 
+                # Usar nova estrutura ou migrar da antiga
+                if "wallet_panels" in saved_data:
+                    wallet_panels = saved_data["wallet_panels"]
+                else:
+                    # Formato antigo - migrar automaticamente
+                    wallet_panels = saved_data
+                    logger.info("Migrando dados do formato antigo para o novo")
+
                 # Tentar recuperar painéis salvos
-                for guild_id_str, panel_info in saved_data.items():
+                for guild_id_str, panel_info in wallet_panels.items():
                     guild_id = int(guild_id_str)
                     guild = self.bot.get_guild(guild_id)
 

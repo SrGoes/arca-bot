@@ -394,3 +394,367 @@ def setup_economy_commands(bot):
 
             # Deletar comando mesmo em caso de erro se configurado
             await delete_command_if_configured(ctx, "admin")
+
+    @bot.command(name="backup_calls", aliases=["bk_calls", "force_backup"])
+    @require_economy_admin()
+    @rate_limit("admin")
+    async def force_backup_calls(ctx):
+        """Força backup dos dados de tracking de voz (só admins)"""
+        logger.info(
+            f"Comando !backup_calls executado por {ctx.author} ({ctx.author.id})"
+        )
+
+        if not ctx.bot.economy:
+            await ctx.send("❌ Sistema de economia não está disponível!")
+            return
+
+        try:
+            # Forçar salvamento dos dados de tracking
+            ctx.bot.economy.save_voice_tracking_data()
+            
+            # Informações dos dados salvos
+            active_sessions = len(ctx.bot.economy.voice_tracking)
+            tracked_messages = len(ctx.bot.economy.voice_tracking_messages)
+            
+            embed = discord.Embed(
+                title="💾 Backup Forçado Concluído",
+                description="Dados de tracking de voz salvos com sucesso!",
+                color=discord.Color.green(),
+                timestamp=datetime.now(timezone.utc)
+            )
+            
+            embed.add_field(
+                name="🎤 Sessões Ativas", 
+                value=f"**{active_sessions}** usuários em call", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="📤 Mensagens Trackadas", 
+                value=f"**{tracked_messages}** mensagens salvas", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="📂 Arquivo", 
+                value="`data/voice_tracking_data.json`", 
+                inline=False
+            )
+            
+            embed.set_footer(text="ARCA Organization - Sistema de Economia")
+            
+            await ctx.send(embed=embed)
+            
+            logger.info(f"Backup forçado executado com sucesso: {active_sessions} sessões, {tracked_messages} mensagens")
+            
+        except Exception as e:
+            logger.error(f"Erro no backup forçado: {e}")
+            
+            await ctx.send(
+                f"❌ **Erro ao forçar backup!**\n"
+                f"```\n{str(e)}\n```"
+            )
+
+        # Deletar comando administrativo se configurado
+        await delete_command_if_configured(ctx, "admin")
+
+    @bot.command(name="status_calls", aliases=["call_status", "calls"])
+    @require_economy_admin()
+    @rate_limit("admin")
+    async def status_calls(ctx):
+        """Mostra status detalhado das calls ativas (só admins)"""
+        logger.info(
+            f"Comando !status_calls executado por {ctx.author} ({ctx.author.id})"
+        )
+
+        if not ctx.bot.economy:
+            await ctx.send("❌ Sistema de economia não está disponível!")
+            return
+
+        try:
+            voice_tracking = ctx.bot.economy.voice_tracking
+            tracking_messages = ctx.bot.economy.voice_tracking_messages
+            current_time = datetime.now(timezone.utc)
+            
+            embed = discord.Embed(
+                title="🎤 Status das Calls Ativas",
+                description="Informações detalhadas do sistema de tracking",
+                color=discord.Color.blue(),
+                timestamp=current_time
+            )
+            
+            if not voice_tracking:
+                embed.add_field(
+                    name="📊 Status Geral",
+                    value="**Nenhuma call ativa no momento**",
+                    inline=False
+                )
+            else:
+                # Agrupar por canal
+                channels_data = {}
+                for user_id, track_data in voice_tracking.items():
+                    channel_id = track_data["channel_id"]
+                    if channel_id not in channels_data:
+                        channels_data[channel_id] = []
+                    channels_data[channel_id].append((user_id, track_data))
+                
+                embed.add_field(
+                    name="📊 Resumo Geral",
+                    value=f"**{len(voice_tracking)}** usuários em **{len(channels_data)}** canais",
+                    inline=False
+                )
+                
+                # Detalhes por canal
+                for channel_id, users_data in channels_data.items():
+                    try:
+                        channel = ctx.bot.get_channel(channel_id)
+                        channel_name = channel.name if channel else f"Canal {channel_id}"
+                    except:
+                        channel_name = f"Canal {channel_id}"
+                    
+                    users_info = []
+                    for user_id, track_data in users_data:
+                        try:
+                            user = ctx.bot.get_user(user_id)
+                            user_name = user.display_name if user else f"User {user_id}"
+                        except:
+                            user_name = f"User {user_id}"
+                        
+                        # Calcular tempo em call
+                        start_time = track_data["start_time"]
+                        time_diff = current_time - start_time
+                        total_minutes = int(time_diff.total_seconds() / 60)
+                        
+                        # Calcular AC ganho até agora
+                        periods_completed = total_minutes // ctx.bot.economy.min_voice_time_for_reward
+                        coins_per_period = ctx.bot.economy.ac_per_hour / (60 / ctx.bot.economy.min_voice_time_for_reward)
+                        coins_earned = int(periods_completed * coins_per_period)
+                        
+                        if total_minutes >= 60:
+                            time_str = f"{total_minutes // 60}h {total_minutes % 60}m"
+                        else:
+                            time_str = f"{total_minutes}m"
+                        
+                        users_info.append(f"• {user_name}: {time_str} ({coins_earned} AC)")
+                    
+                    # Verificar se há mensagem de tracking
+                    has_message = "✅" if channel_id in tracking_messages else "❌"
+                    
+                    field_value = f"**Mensagem de tracking:** {has_message}\n" + "\n".join(users_info)
+                    
+                    embed.add_field(
+                        name=f"🎤 {channel_name}",
+                        value=field_value,
+                        inline=False
+                    )
+            
+            # Informações técnicas
+            embed.add_field(
+                name="🔧 Informações Técnicas",
+                value=(
+                    f"**Mensagens trackadas:** {len(tracking_messages)}\n"
+                    f"**Arquivo de dados:** `voice_tracking_data.json`\n"
+                    f"**Tempo máx. restart:** {ctx.bot.economy.max_restart_time_for_recovery} min\n"
+                    f"**Última atualização:** <t:{int(current_time.timestamp())}:R>"
+                ),
+                inline=False
+            )
+            
+            embed.set_footer(text="ARCA Organization - Sistema de Tracking")
+            
+            await ctx.send(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Erro no status das calls: {e}")
+            
+            await ctx.send(
+                f"❌ **Erro ao verificar status das calls!**\n"
+                f"```\n{str(e)}\n```"
+            )
+
+        # Deletar comando administrativo se configurado
+        await delete_command_if_configured(ctx, "admin")
+
+    @bot.command(name="force_backup", aliases=["backup", "bk"])
+    @require_economy_admin()
+    @rate_limit("admin")
+    async def force_backup(ctx):
+        """Força backup completo dos dados do bot (só admins)"""
+        logger.info(
+            f"Comando !force_backup executado por {ctx.author} ({ctx.author.id})"
+        )
+
+        if not ctx.bot.economy:
+            await ctx.send("❌ Sistema de economia não está disponível!")
+            return
+
+        try:
+            from datetime import datetime, timezone
+            import shutil
+            import os
+            
+            # Forçar backup do sistema de economia
+            economy_backup_created = False
+            voice_backup_created = False
+            panel_backup_created = False
+            lottery_backup_created = False
+            
+            # Backup da economia
+            if os.path.exists(ctx.bot.economy.data_file):
+                timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+                economy_backup_file = os.path.join(
+                    ctx.bot.economy.backup_dir, f"economy_backup_manual_{timestamp}.json"
+                )
+                os.makedirs(ctx.bot.economy.backup_dir, exist_ok=True)
+                shutil.copy2(ctx.bot.economy.data_file, economy_backup_file)
+                economy_backup_created = True
+                
+            # Backup do voice tracking
+            if os.path.exists(ctx.bot.economy.voice_tracking_file):
+                voice_backup_file = os.path.join(
+                    ctx.bot.economy.backup_dir, f"voice_tracking_backup_manual_{timestamp}.json"
+                )
+                shutil.copy2(ctx.bot.economy.voice_tracking_file, voice_backup_file)
+                voice_backup_created = True
+            
+            # Backup dos painéis (carteiras + loterias)
+            panel_file = "data/panel_data.json"
+            if os.path.exists(panel_file):
+                panel_backup_file = os.path.join(
+                    ctx.bot.economy.backup_dir, f"panel_data_backup_manual_{timestamp}.json"
+                )
+                shutil.copy2(panel_file, panel_backup_file)
+                panel_backup_created = True
+            
+            # Backup dos dados de sorteios ativos
+            lottery_file = "data/lottery_data.json"
+            if os.path.exists(lottery_file):
+                lottery_backup_file = os.path.join(
+                    ctx.bot.economy.backup_dir, f"lottery_data_backup_manual_{timestamp}.json"
+                )
+                shutil.copy2(lottery_file, lottery_backup_file)
+                lottery_backup_created = True
+            
+            # Backup do histórico de sorteios
+            lottery_history_file = "data/lottery_history.json"
+            if os.path.exists(lottery_history_file):
+                lottery_history_backup_file = os.path.join(
+                    ctx.bot.economy.backup_dir, f"lottery_history_backup_manual_{timestamp}.json"
+                )
+                shutil.copy2(lottery_history_file, lottery_history_backup_file)
+                lottery_backup_created = True
+            
+            # Forçar salvamento dos dados atuais
+            ctx.bot.economy.save_data()
+            ctx.bot.economy.save_voice_tracking_data()
+            
+            # Forçar salvamento dos painéis se disponíveis
+            if hasattr(ctx.bot, 'wallet_panel') and ctx.bot.wallet_panel:
+                await ctx.bot.wallet_panel._save_panel_data()
+            if hasattr(ctx.bot, 'lottery_panel') and ctx.bot.lottery_panel:
+                ctx.bot.lottery_panel.save_panel_data()
+            
+            # Forçar salvamento dos dados de sorteios se disponíveis
+            if hasattr(ctx.bot, 'lottery') and ctx.bot.lottery:
+                ctx.bot.lottery.save_data()
+                ctx.bot.lottery.save_history()
+            
+            # Informações dos dados
+            total_users = len(ctx.bot.economy.user_data)
+            active_sessions = len(ctx.bot.economy.voice_tracking)
+            tracked_messages = len(getattr(ctx.bot.economy, 'message_tracking', {}))
+            
+            # Contar painéis
+            panel_count = 0
+            if hasattr(ctx.bot, 'wallet_panel') and ctx.bot.wallet_panel:
+                panel_count += len(getattr(ctx.bot.wallet_panel, 'panel_messages', {}))
+            if hasattr(ctx.bot, 'lottery_panel') and ctx.bot.lottery_panel:
+                panel_count += len(getattr(ctx.bot.lottery_panel, 'panel_messages', {}))
+            
+            # Contar sorteios
+            lottery_count = 0
+            if hasattr(ctx.bot, 'lottery') and ctx.bot.lottery:
+                lottery_count = len(getattr(ctx.bot.lottery, 'active_lotteries', {}))
+            
+            embed = discord.Embed(
+                title="💾 Backup Completo Forçado",
+                description="Backup manual executado com sucesso!",
+                color=discord.Color.green(),
+                timestamp=datetime.now(timezone.utc)
+            )
+            
+            embed.add_field(
+                name="👥 Dados de Usuários", 
+                value=f"**{total_users}** usuários salvos", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="🎤 Sessões de Voz", 
+                value=f"**{active_sessions}** sessões ativas", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="📤 Mensagens Trackadas", 
+                value=f"**{tracked_messages}** mensagens", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="📊 Painéis Ativos", 
+                value=f"**{panel_count}** painéis", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="🎲 Sorteios Ativos", 
+                value=f"**{lottery_count}** sorteios", 
+                inline=True
+            )
+            
+            embed.add_field(
+                name="⏰ Timestamp", 
+                value=f"`{timestamp}`", 
+                inline=True
+            )
+            
+            # Status dos backups
+            backup_status = []
+            if economy_backup_created:
+                backup_status.append("✅ Economia")
+            if voice_backup_created:
+                backup_status.append("✅ Voice Tracking")
+            if panel_backup_created:
+                backup_status.append("✅ Painéis (Carteiras + Loterias)")
+            if lottery_backup_created:
+                backup_status.append("✅ Sorteios + Histórico")
+                
+            embed.add_field(
+                name="📂 Arquivos de Backup",
+                value="\n".join(backup_status) if backup_status else "⚠️ Nenhum arquivo para backup",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="📁 Localização",
+                value=f"`{ctx.bot.economy.backup_dir}/`",
+                inline=False
+            )
+            
+            embed.set_footer(text="ARCA Organization - Sistema de Backup")
+            
+            await ctx.send(embed=embed)
+            
+            logger.info(f"Backup manual executado com sucesso: {total_users} usuários, {active_sessions} sessões")
+            
+        except Exception as e:
+            logger.error(f"Erro no backup forçado: {e}")
+            
+            await ctx.send(
+                f"❌ **Erro ao forçar backup!**\n"
+                f"```\n{str(e)}\n```"
+            )
+
+        # Deletar comando administrativo se configurado
+        await delete_command_if_configured(ctx, "admin")
