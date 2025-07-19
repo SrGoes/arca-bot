@@ -164,7 +164,7 @@ class LotteryPanel:
                     # Buscar canal do painel
                     panel_channel = discord.utils.get(
                         guild.channels, 
-                        name=getattr(self.config, 'history_panel_channel', 'painel-sorteios')
+                        name=getattr(self.config, 'history_panel_channel', 'painel')
                     )
                     
                     if not panel_channel:
@@ -205,7 +205,7 @@ class LotteryPanel:
                     # Buscar canal do painel
                     panel_channel = discord.utils.get(
                         guild.channels, 
-                        name=getattr(self.config, 'history_panel_channel', 'painel-sorteios')
+                        name=getattr(self.config, 'history_panel_channel', 'painel')
                     )
                     
                     if not panel_channel:
@@ -257,33 +257,41 @@ class LotteryPanel:
         """Cria embed do painel de sorteios"""
         embed = discord.Embed(
             title="🎲 **PAINEL DE SORTEIOS ARCA** 🎲",
-            description="*Histórico e status dos sorteios da organização*",
+            description=(
+                "```fix\n"
+                "═══════════════════════════════════════\n"
+                "    CENTRO DE CONTROLE DE SORTEIOS\n"
+                "═══════════════════════════════════════\n"
+                "```"
+                "*Acompanhe todos os sorteios da organização em tempo real*"
+            ),
             color=discord.Color.gold(),
             timestamp=datetime.now(timezone.utc)
         )
 
-        # Adicionar sorteios ativos
+        # Adicionar sorteios ativos (não cancelados e não finalizados)
         active_lotteries = []
         for lottery_id, lottery_data in self.lottery_system.active_lotteries.items():
-            if lottery_data.get("guild_id") == guild.id:
+            if (lottery_data.get("guild_id") == guild.id and 
+                not lottery_data.get("cancelled") and 
+                not lottery_data.get("winner")):
                 active_lotteries.append(lottery_data)
 
         if active_lotteries:
             active_text = []
             for lottery in active_lotteries[:3]:  # Máximo 3 ativos
-                status = "🏆 Finalizado" if lottery.get("winner") else "❌ Cancelado" if lottery.get("cancelled") else "🎲 Ativo"
                 participants = len(lottery.get("participants", {}))
-                active_text.append(f"**{lottery.get('name', 'Sem nome')}**\n{status} • {participants} participantes")
+                active_text.append(f"🎲 **{lottery.get('name', 'Sem nome')}**\n   ✨ Ativo • {participants} participantes")
             
             embed.add_field(
-                name="🎯 Sorteios Ativos",
-                value="\n\n".join(active_text),
+                name="🟢 **SORTEIOS ATIVOS**",
+                value=f"```diff\n+ SORTEIOS EM ANDAMENTO\n```{chr(10).join(active_text)}",
                 inline=False
             )
         else:
             embed.add_field(
-                name="🎯 Sorteios Ativos",
-                value="*Nenhum sorteio ativo no momento*",
+                name="🟢 **SORTEIOS ATIVOS**",
+                value="```diff\n+ SORTEIOS EM ANDAMENTO\n```*🔍 Nenhum sorteio ativo no momento*\n*✨ Aguardando novos sorteios...*",
                 inline=False
             )
 
@@ -331,14 +339,14 @@ class LotteryPanel:
 
         if recent_history:
             embed.add_field(
-                name="📚 Histórico Recente",
-                value="\n\n".join(recent_history),
+                name="� **HISTÓRICO RECENTE**",
+                value=f"```yaml\n- SORTEIOS FINALIZADOS -\n```{chr(10).join(recent_history)}",
                 inline=False
             )
         else:
             embed.add_field(
-                name="📚 Histórico Recente",
-                value="*Nenhum sorteio no histórico*",
+                name="� **HISTÓRICO RECENTE**",
+                value="```yaml\n- SORTEIOS FINALIZADOS -\n```*📂 Nenhum sorteio no histórico*\n*⏳ Histórico será exibido após o primeiro sorteio*",
                 inline=False
             )
 
@@ -348,11 +356,12 @@ class LotteryPanel:
         total_value_distributed = sum(entry.get("total_value", 0) for entry in guild_history)
         
         embed.add_field(
-            name="📊 Estatísticas Gerais",
+            name="📊 **ESTATÍSTICAS GERAIS**",
             value=(
-                f"🎲 **Total de sorteios:** {total_lotteries}\n"
-                f"👥 **Total de participações:** {total_participants}\n"
-                f"💰 **Valor total movimentado:** {total_value_distributed} AC"
+                f"```ini\n[ RESUMO GERAL ]\n```"
+                f"🎲 **Total de sorteios:** `{total_lotteries}`\n"
+                f"👥 **Total de participações:** `{total_participants}`\n"
+                f"💰 **Valor total movimentado:** `{total_value_distributed:,} AC`"
             ),
             inline=False
         )
@@ -368,9 +377,62 @@ class LotteryPanel:
         if guild:
             panel_channel = discord.utils.get(
                 guild.channels, 
-                name=getattr(self.config, 'history_panel_channel', 'painel-sorteios')
+                name=getattr(self.config, 'history_panel_channel', 'painel')
             )
             if panel_channel:
                 await self.update_panel_for_guild(guild, panel_channel)
         else:
             await self.update_all_panels()
+
+    async def create_panel(self, guild: discord.Guild, channel: discord.TextChannel = None):
+        """Cria painel de loterias em um servidor específico"""
+        try:
+            if not channel:
+                # Buscar canal configurado
+                channel = discord.utils.get(
+                    guild.channels, 
+                    name=getattr(self.config, 'history_panel_channel', 'painel')
+                )
+                
+            if not channel:
+                logger.warning(f"Canal para painel de loterias não encontrado em {guild.name}")
+                return False
+                
+            # Atualizar painel para criar se não existir
+            await self.update_panel_for_guild(guild, channel)
+            logger.info(f"✅ Painel de loterias criado/atualizado em {guild.name} (#{channel.name})")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao criar painel de loterias em {guild.name}: {e}")
+            return False
+
+    async def remove_panel(self, guild: discord.Guild):
+        """Remove painel de loterias de um servidor"""
+        try:
+            guild_id = guild.id
+            
+            # Remover mensagem se existir
+            if guild_id in self.panel_message_ids:
+                try:
+                    channel = discord.utils.get(
+                        guild.channels, 
+                        name=getattr(self.config, 'history_panel_channel', 'painel')
+                    )
+                    if channel:
+                        message_id = self.panel_message_ids[guild_id]
+                        message = await channel.fetch_message(message_id)
+                        await message.delete()
+                except Exception as e:
+                    logger.warning(f"Não foi possível deletar mensagem do painel: {e}")
+                
+                # Remover dos dados
+                del self.panel_message_ids[guild_id]
+                self.save_panel_data()
+                
+            logger.info(f"✅ Painel de loterias removido de {guild.name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao remover painel de loterias de {guild.name}: {e}")
+            return False

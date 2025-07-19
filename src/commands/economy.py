@@ -395,7 +395,7 @@ def setup_economy_commands(bot):
             # Deletar comando mesmo em caso de erro se configurado
             await delete_command_if_configured(ctx, "admin")
 
-    @bot.command(name="backup_calls", aliases=["bk_calls", "force_backup"])
+    @bot.command(name="backup_calls", aliases=["bk_calls"])
     @require_economy_admin()
     @rate_limit("admin")
     async def force_backup_calls(ctx):

@@ -15,11 +15,15 @@
     "channel_name": "sorteios",
     "max_ticket_price_multiplier": 2.0,
     "rate_limit_buy": 10,
-    "delete_command_after_creation": true
+    "delete_command_after_creation": true,
+    "history_panel_channel": "painel",
+    "history_panel_enabled": true,
+    "max_history_entries": 10,
+    "panel_update_interval": 300
   },
   "general": {
     "log_channel_name": "log-cargos",
-    "wallet_panel_channel": "painel-carteiras",
+    "wallet_panel_channel": "painel",
     "command_prefix": "!",
     "backup_interval_hours": 6,
     "max_backups": 10,

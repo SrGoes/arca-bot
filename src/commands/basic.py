@@ -136,12 +136,13 @@ def setup_basic_commands(bot):
 
         # Comandos de Painel (Administrativos)
         embed.add_field(
-            name="📊 Painel (Admin)",
+            name="📊 Painéis (Admin)",
             value=(
-                "`!painel status` - Status do sistema (Admin)\n"
-                "`!painel config` - Ver configuração (Admin)\n"
-                "`!painel atualizar` - Forçar atualização (Admin)\n"
-                "`!painel criar` - Criar painel (Admin)"
+                "`!painel status` - Status de ambos os painéis\n"
+                "`!painel criar` - Criar ambos os painéis\n"
+                "`!painel atualizar` - Atualizar ambos os painéis\n"
+                "`!painel diagnostico` - Verificar configuração\n"
+                "*(Comandos controlam carteiras e loterias)*"
             ),
             inline=False,
         )
@@ -154,7 +155,9 @@ def setup_basic_commands(bot):
                 "`!pagar <@user> <valor>` - Pagar AC para usuário\n"
                 "`!remover <@user> <valor>` - Remover AC de usuário\n"
                 "`!criarsorteio Nome | Valor` - Criar sorteio\n"
-                "`!cache [ação]` - Gerenciar cache\n"
+                "`!force_backup` - Backup completo dos dados\n"
+                "`!backup_calls` - Backup do voice tracking\n"
+                "`!status_calls` - Status das calls ativas\n"
                 "`!desligar` - Desligar bot"
             ),
             inline=False,
@@ -176,58 +179,198 @@ def setup_basic_commands(bot):
 
         if not action:
             embed = discord.Embed(
-                title="🎛️ Gerenciamento do Painel",
-                description="Comandos disponíveis para gerenciar o painel de carteiras",
+                title="🎛️ Gerenciamento dos Painéis",
+                description="Comandos para gerenciar painéis de carteiras e loterias no canal `painel`",
                 color=discord.Color.blue(),
             )
             embed.add_field(
                 name="📊 Comandos",
                 value=(
-                    f"`{ctx.prefix}painel criar` - Criar painel no canal configurado\n"
-                    f"`{ctx.prefix}painel atualizar` - Forçar atualização do painel\n"
-                    f"`{ctx.prefix}painel status` - Ver status do sistema\n"
+                    f"`{ctx.prefix}painel criar` - Criar ambos os painéis no canal\n"
+                    f"`{ctx.prefix}painel atualizar` - Atualizar ambos os painéis\n"
+                    f"`{ctx.prefix}painel status` - Status de ambos os sistemas\n"
+                    f"`{ctx.prefix}painel diagnostico` - Verificar configuração\n"
                     f"`{ctx.prefix}painel config` - Ver configuração atual"
                 ),
+                inline=False,
+            )
+            embed.add_field(
+                name="💡 Informação",
+                value="Todos os comandos controlam tanto o painel de carteiras quanto o de loterias",
                 inline=False,
             )
             await ctx.send(embed=embed)
             return
 
         if action.lower() == "criar":
-            success = await ctx.bot.wallet_panel.create_panel_in_guild(ctx.guild)
-            if success:
-                await ctx.send(
-                    f"✅ Painel criado no canal **#{ctx.bot.config.general.wallet_panel_channel}**!"
-                )
+            await ctx.send("🔄 Criando painéis...")
+            
+            # Criar painel de carteiras
+            wallet_success = await ctx.bot.wallet_panel.create_panel_in_guild(ctx.guild)
+            
+            # Criar painel de loterias se disponível
+            lottery_success = False
+            if ctx.bot.lottery_panel:
+                lottery_success = await ctx.bot.lottery_panel.create_panel(ctx.guild)
+            
+            # Resultado
+            results = []
+            if wallet_success:
+                results.append("✅ Painel de carteiras criado")
             else:
-                await ctx.send(
-                    f"❌ Erro ao criar painel. Verifique se o canal **#{ctx.bot.config.general.wallet_panel_channel}** existe!"
+                results.append("❌ Falha no painel de carteiras")
+                
+            if ctx.bot.lottery_panel:
+                if lottery_success:
+                    results.append("✅ Painel de loterias criado")
+                else:
+                    results.append("❌ Falha no painel de loterias")
+            
+            channel_name = ctx.bot.config.general.wallet_panel_channel
+            embed = discord.Embed(
+                title="📊 Resultado da Criação",
+                description=f"Canal: **#{channel_name}**",
+                color=discord.Color.green() if (wallet_success and (lottery_success or not ctx.bot.lottery_panel)) else discord.Color.orange()
+            )
+            
+            embed.add_field(
+                name="📋 Status",
+                value="\n".join(results),
+                inline=False
+            )
+            
+            if not wallet_success or (ctx.bot.lottery_panel and not lottery_success):
+                embed.add_field(
+                    name="💡 Solução",
+                    value=f"Verifique se o canal **#{channel_name}** existe e se o bot tem as permissões necessárias.",
+                    inline=False
                 )
+            
+            await ctx.send(embed=embed)
 
         elif action.lower() == "atualizar":
-            await ctx.send("🔄 Atualizando painel...")
+            await ctx.send("🔄 Atualizando painéis...")
+            
+            # Atualizar painel de carteiras
             await ctx.bot.wallet_panel.force_update_all()
-            await ctx.send("✅ Painel atualizado!")
+            
+            # Atualizar painel de loterias se disponível
+            if ctx.bot.lottery_panel:
+                await ctx.bot.lottery_panel.force_update(ctx.guild)
+            
+            embed = discord.Embed(
+                title="✅ Painéis Atualizados",
+                description="Ambos os painéis foram atualizados com sucesso!",
+                color=discord.Color.green()
+            )
+            
+            await ctx.send(embed=embed)
 
         elif action.lower() == "status":
             embed = discord.Embed(
-                title="📊 Status do Sistema de Painel", color=discord.Color.green()
+                title="📊 Status dos Sistemas de Painéis", 
+                color=discord.Color.green()
             )
+            
+            # Status do sistema de carteiras
             embed.add_field(
-                name="🔧 Sistema",
-                value=f"Ativo: {'✅' if ctx.bot.wallet_panel.is_running else '❌'}",
+                name="� Painel de Carteiras",
+                value=f"{'✅ Ativo' if ctx.bot.wallet_panel.is_running else '❌ Inativo'}",
                 inline=True,
             )
+            
+            # Status do sistema de loterias
+            lottery_status = "❌ Indisponível"
+            if ctx.bot.lottery_panel:
+                lottery_status = f"{'✅ Ativo' if ctx.bot.lottery_panel.is_running else '❌ Inativo'}"
+            
             embed.add_field(
-                name="📝 Painéis Ativos",
-                value=str(len(ctx.bot.wallet_panel.panel_messages)),
+                name="🎲 Painel de Loterias",
+                value=lottery_status,
                 inline=True,
             )
+            
+            # Painéis ativos
+            wallet_panels = len(ctx.bot.wallet_panel.panel_messages)
+            lottery_panels = len(getattr(ctx.bot.lottery_panel, 'panel_message_ids', {})) if ctx.bot.lottery_panel else 0
+            
             embed.add_field(
-                name="⏱️ Intervalo de Atualização",
+                name="📊 Painéis Ativos",
+                value=f"Carteiras: {wallet_panels}\nLoterias: {lottery_panels}",
+                inline=True,
+            )
+            
+            # Intervalo de atualização
+            embed.add_field(
+                name="⏱️ Atualização",
                 value=f"{ctx.bot.wallet_panel.update_interval // 60} minutos",
                 inline=True,
             )
+            
+            # Canal configurado
+            embed.add_field(
+                name="📍 Canal",
+                value=f"#{ctx.bot.config.general.wallet_panel_channel}",
+                inline=True,
+            )
+            
+            await ctx.send(embed=embed)
+
+        elif action.lower() == "diagnostico" or action.lower() == "diagnostic":
+            embed = discord.Embed(
+                title="🔍 Diagnóstico do Sistema de Painéis", 
+                color=discord.Color.orange()
+            )
+            
+            # Verificar canal de painel
+            panel_channel = await ctx.bot.wallet_panel.get_wallet_channel(ctx.guild)
+            channel_status = "✅ Encontrado" if panel_channel else "❌ Não encontrado"
+            embed.add_field(
+                name=f"📍 Canal '{ctx.bot.config.general.wallet_panel_channel}'",
+                value=f"{channel_status}" + (f" - {panel_channel.mention}" if panel_channel else ""),
+                inline=False
+            )
+            
+            # Verificar permissões do bot
+            if panel_channel:
+                perms = panel_channel.permissions_for(ctx.guild.me)
+                perm_status = []
+                if perms.send_messages: perm_status.append("✅ Enviar mensagens")
+                else: perm_status.append("❌ Enviar mensagens")
+                if perms.manage_messages: perm_status.append("✅ Gerenciar mensagens")
+                else: perm_status.append("❌ Gerenciar mensagens")
+                if perms.embed_links: perm_status.append("✅ Enviar embeds")
+                else: perm_status.append("❌ Enviar embeds")
+                
+                embed.add_field(
+                    name="🔐 Permissões do Bot",
+                    value="\n".join(perm_status),
+                    inline=False
+                )
+            
+            # Status dos painéis ativos
+            embed.add_field(
+                name="📊 Painéis Ativos",
+                value=f"Carteiras: {len(ctx.bot.wallet_panel.panel_messages)}\n" +
+                      f"Loterias: {len(getattr(ctx.bot.lottery_panel, 'panel_messages', {})) if ctx.bot.lottery_panel else 0}",
+                inline=True
+            )
+            
+            # Listar canais disponíveis
+            text_channels = [ch.name for ch in ctx.guild.text_channels[:10]]
+            embed.add_field(
+                name="📋 Canais de Texto Disponíveis",
+                value=", ".join(text_channels) + ("..." if len(ctx.guild.text_channels) > 10 else ""),
+                inline=False
+            )
+            
+            if not panel_channel:
+                embed.add_field(
+                    name="💡 Solução",
+                    value=f"Crie um canal chamado `{ctx.bot.config.general.wallet_panel_channel}` ou use `!painel criar` após criar o canal.",
+                    inline=False
+                )
+            
             await ctx.send(embed=embed)
 
         elif action.lower() == "config":

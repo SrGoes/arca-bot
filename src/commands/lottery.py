@@ -72,6 +72,7 @@ def setup_lottery_commands(bot):
             "participants": {},
             "ticket_prices": [],
             "channel_id": ctx.channel.id,
+            "guild_id": ctx.guild.id,
         }
 
         # Criar embed e view públicos

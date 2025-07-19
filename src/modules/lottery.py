@@ -951,6 +951,11 @@ class AdminLotteryView(discord.ui.View):
             # Adicionar ao histórico
             self.lottery_system.add_to_history(self.lottery_data)
 
+            # Remover dos sorteios ativos
+            if self.lottery_id in self.lottery_system.active_lotteries:
+                del self.lottery_system.active_lotteries[self.lottery_id]
+                self.lottery_system.save_data()
+
         except Exception as e:
             logger.error(f"Erro ao sortear: {e}")
             await interaction.response.send_message(
@@ -1083,8 +1088,11 @@ class AdminLotteryView(discord.ui.View):
             # Adicionar ao histórico
             self.lottery_system.add_to_history(self.lottery_data)
 
-            # Atualizar dados
-            self.lottery_system.active_lotteries[self.lottery_id] = self.lottery_data
+            # Remover dos sorteios ativos
+            if self.lottery_id in self.lottery_system.active_lotteries:
+                del self.lottery_system.active_lotteries[self.lottery_id]
+
+            # Salvar dados
             self.lottery_system.save_data()
 
             # Criar embed atualizado

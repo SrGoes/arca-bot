@@ -167,8 +167,11 @@ class ARCABot(commands.Bot):
 
         # Iniciar painel de loterias
         if self.lottery_panel and not self.lottery_panel.is_running:
-            await self.lottery_panel.start()
+            await self.lottery_panel.start_panel_system()
             logger.info("✅ Painel de loterias iniciado")
+
+        # Criar painéis automaticamente em servidores que tenham o canal configurado
+        await self._auto_create_panels()
 
         # Definir status do bot
         await self.change_presence(
@@ -350,6 +353,51 @@ class ARCABot(commands.Bot):
             )
         except Exception:
             pass  # Se não conseguir enviar a mensagem, apenas log
+
+    async def _auto_create_panels(self):
+        """Cria painéis automaticamente em servidores que tenham o canal configurado"""
+        try:
+            channel_name = self.config.general.wallet_panel_channel
+            created_count = 0
+            
+            for guild in self.guilds:
+                # Buscar canal
+                panel_channel = discord.utils.get(guild.channels, name=channel_name)
+                if not panel_channel:
+                    continue
+                
+                # Verificar se já tem painéis ativos
+                has_wallet_panel = guild.id in getattr(self.wallet_panel, 'panel_messages', {})
+                has_lottery_panel = False
+                if self.lottery_panel:
+                    has_lottery_panel = guild.id in getattr(self.lottery_panel, 'panel_message_ids', {})
+                
+                # Criar painéis se não existirem
+                if not has_wallet_panel:
+                    try:
+                        wallet_success = await self.wallet_panel.create_panel_in_guild(guild)
+                        if wallet_success:
+                            logger.info(f"✅ Painel de carteiras criado automaticamente em {guild.name}")
+                            created_count += 1
+                    except Exception as e:
+                        logger.warning(f"⚠️ Erro ao criar painel de carteiras em {guild.name}: {e}")
+                
+                if self.lottery_panel and not has_lottery_panel:
+                    try:
+                        lottery_success = await self.lottery_panel.create_panel(guild, panel_channel)
+                        if lottery_success:
+                            logger.info(f"✅ Painel de loterias criado automaticamente em {guild.name}")
+                            created_count += 1
+                    except Exception as e:
+                        logger.warning(f"⚠️ Erro ao criar painel de loterias em {guild.name}: {e}")
+            
+            if created_count > 0:
+                logger.info(f"🎉 Criação automática concluída: {created_count} painéis criados")
+            else:
+                logger.info("ℹ️ Nenhum painel precisou ser criado automaticamente")
+                
+        except Exception as e:
+            logger.error(f"❌ Erro na criação automática de painéis: {e}")
 
 
 # Instanciar o bot

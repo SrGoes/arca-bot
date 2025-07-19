@@ -80,7 +80,7 @@ def setup_lottery_panel_commands(bot):
             )
             
             # Estatísticas por servidor
-            guild_count = len(panel.panels)
+            guild_count = len(panel.panel_message_ids)
             embed.add_field(
                 name="🏰 Servidores Ativos",
                 value=f"{guild_count} servidor(es)",
@@ -97,11 +97,11 @@ def setup_lottery_panel_commands(bot):
                 )
             
             # Informações específicas do servidor atual
-            if ctx.guild.id in panel.panels:
-                panel_info = panel.panels[ctx.guild.id]
+            if ctx.guild.id in panel.panel_message_ids:
+                message_info = panel.panel_message_ids[ctx.guild.id]
                 embed.add_field(
                     name="📍 Status neste Servidor",
-                    value=f"Canal: <#{panel_info['channel_id']}>\nMensagem: [Ver Painel](https://discord.com/channels/{ctx.guild.id}/{panel_info['channel_id']}/{panel_info['message_id']})",
+                    value=f"Canal: <#{message_info['channel_id']}>\nMensagem: [Ver Painel](https://discord.com/channels/{ctx.guild.id}/{message_info['channel_id']}/{message_info['message_id']})",
                     inline=False
                 )
             else:
@@ -209,6 +209,51 @@ def setup_lottery_panel_commands(bot):
         except Exception as e:
             logger.error(f"Erro ao remover painel de loterias: {e}")
             await ctx.send(f"❌ Erro ao remover painel: {str(e)}")
+
+        # Deletar comando administrativo se configurado
+        await delete_command_if_configured(ctx, "admin")
+
+    @bot.command(name="painel_loteria_atualizar", aliases=["lottery_panel_update"])
+    @require_economy_admin()
+    async def lottery_panel_update(ctx):
+        """
+        Força atualização do painel de loterias
+        """
+        try:
+            if not hasattr(ctx.bot, 'lottery_panel') or not ctx.bot.lottery_panel:
+                await ctx.send("❌ Sistema de painel de loterias não está disponível.")
+                return
+
+            panel = ctx.bot.lottery_panel
+            
+            # Verificar se há painel configurado neste servidor
+            if ctx.guild.id not in panel.panel_message_ids:
+                await ctx.send("⚠️ Este servidor não possui um painel de loterias configurado.")
+                return
+
+            # Forçar atualização
+            await panel.force_update(ctx.guild)
+            
+            embed = discord.Embed(
+                title="🔄 Painel de Loterias Atualizado",
+                description="Painel atualizado com sucesso!",
+                color=0x00ff00,
+                timestamp=datetime.now(timezone.utc)
+            )
+            
+            message_info = panel.panel_message_ids[ctx.guild.id]
+            embed.add_field(
+                name="📍 Localização",
+                value=f"Canal: <#{message_info['channel_id']}>\n[Ver Painel](https://discord.com/channels/{ctx.guild.id}/{message_info['channel_id']}/{message_info['message_id']})",
+                inline=False
+            )
+            
+            embed.set_footer(text="ARCA Organization - Painel Atualizado")
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            logger.error(f"Erro ao atualizar painel de loterias: {e}")
+            await ctx.send(f"❌ Erro ao atualizar painel: {str(e)}")
 
         # Deletar comando administrativo se configurado
         await delete_command_if_configured(ctx, "admin")

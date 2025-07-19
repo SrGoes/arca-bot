@@ -167,7 +167,7 @@ https://discord.com/api/oauth2/authorize?client_id=CLIENT_ID&permissions=3165184
 #### **Canais Necessários**
 1. **Categoria**: `C.O.M.M.S OPS` com canais de voz para ganhar AC
 2. **Canal**: `log-cargos` para logs de mudanças de cargos  
-3. **Canal**: `painel-carteiras` para o painel de carteiras automático
+3. **Canal**: `painel` para painéis automáticos (carteiras e loterias)
 4. **Canal**: `sorteios` para sorteios (opcional)
 
 #### **Cargos Administrativos**
@@ -281,6 +281,7 @@ chmod +x scripts/setup.sh
 |---------|-----------|-----------|
 | `!painel_loteria_status` | Mostra status do painel de histórico | Economy Admin |
 | `!painel_loteria_criar [#canal]` | Cria painel no canal especificado ou atual | Economy Admin |
+| `!painel_loteria_atualizar` | Força atualização do painel de loterias | Economy Admin |
 | `!painel_loteria_remover` | Remove painel deste servidor | Economy Admin |
 
 **Botões Interativos:**
@@ -289,8 +290,8 @@ chmod +x scripts/setup.sh
 - ❌ **Cancelar** - Cancela o sorteio (reembolso automático)
 
 ### **🎛️ Sistema de Painel Automático**
-- **Painel de Carteiras** - Atualização automática a cada 5 minutos no canal `painel-carteiras`
-- **Painel de Loterias** - Histórico completo de sorteios com atualização automática
+- **Painel de Carteiras** - Atualização automática a cada 5 minutos no canal `painel`
+- **Painel de Loterias** - Histórico completo de sorteios com atualização automática no canal `painel`
 - **Ranking Completo** - Mostra TODOS os usuários (não apenas top 10)
 - **Estatísticas** - Total em circulação, usuários ativos, distribuição
 - **Recuperação Inteligente** - Painéis sobrevivem a reinicializações
@@ -487,7 +488,7 @@ Get-Content "data\economy_data.json" | ConvertFrom-Json
 - ✅ Força backup com `!backup_calls` se necessário
 
 ### **Painel de Carteiras não atualiza**
-- ✅ Verifique se o canal `painel-carteiras` existe
+- ✅ Verifique se o canal `painel` existe
 - ✅ Confirme permissões do bot para editar mensagens
 - ✅ Use comando `!painel_loteria_status` para verificar status
 - ✅ Recrie o painel com `!painel_loteria_criar`
@@ -511,10 +512,11 @@ Get-Content "logs\bot.log" -Tail 50
 ### **Comandos de Diagnóstico**
 Comandos específicos para monitoramento e manutenção:
 ```bash
-!status_calls               # Status das calls ativas
-!force_backup              # Backup manual completo com estatísticas
-!backup_calls              # Backup só do voice tracking
-!painel_loteria_status     # Status dos painéis de loterias
+!status_calls                    # Status das calls ativas
+!force_backup                   # Backup manual completo com estatísticas
+!backup_calls                   # Backup só do voice tracking
+!painel_loteria_status          # Status dos painéis de loterias
+!painel_loteria_atualizar       # Atualizar painel de loterias
 ```
 
 ### **📊 Exemplo de Saída do !force_backup**
@@ -543,7 +545,7 @@ Comandos específicos para monitoramento e manutenção:
 - ✅ Verifique se o bot tem permissão para ver e enviar mensagens no canal
 
 ### **Painel de carteiras não funciona**
-- ✅ Crie um canal com o nome exato `painel-carteiras`
+- ✅ Crie um canal com o nome exato `painel`
 - ✅ Verifique se o bot tem permissão para gerenciar mensagens
 - ✅ Verifique se os dados do painel estão sendo salvos em `data/panel_data.json`
 

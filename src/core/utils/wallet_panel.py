@@ -365,8 +365,15 @@ class WalletPanel:
     ) -> discord.Embed:
         """Cria o embed do painel de carteiras"""
         embed = discord.Embed(
-            title="💰 Painel de Carteiras ARCA",
-            description=f"**{guild.name}** | Atualizado automaticamente a cada 5 minutos",
+            title="💰 **PAINEL DE CARTEIRAS ARCA** 💰",
+            description=(
+                "```fix\n"
+                "═══════════════════════════════════════\n"
+                "     CENTRO DE CONTROLE FINANCEIRO\n"
+                "═══════════════════════════════════════\n"
+                "```"
+                f"*Acompanhe todas as carteiras de **{guild.name}** em tempo real*"
+            ),
             color=discord.Color.gold(),
             timestamp=datetime.now(timezone.utc),
         )
@@ -383,12 +390,13 @@ class WalletPanel:
         active_users = len([entry for entry in wallet_data if entry.balance > 0])
 
         embed.add_field(
-            name="📊 Estatísticas Gerais",
+            name="📊 **ESTATÍSTICAS GERAIS**",
             value=(
-                f"**Total em Circulação:** {total_ac:,} AC\n"
-                f"**Total Já Distribuído:** {total_earned:,} AC\n"
-                f"**Usuários Ativos:** {active_users}\n"
-                f"**Total de Usuários:** {len(wallet_data)}"
+                f"```ini\n[ RESUMO FINANCEIRO ]\n```"
+                f"💰 **Total em Circulação:** `{total_ac:,} AC`\n"
+                f"📈 **Total Já Distribuído:** `{total_earned:,} AC`\n"
+                f"👥 **Usuários Ativos:** `{active_users}`\n"
+                f"👤 **Total de Usuários:** `{len(wallet_data)}`"
             ),
             inline=False,
         )
@@ -421,8 +429,8 @@ class WalletPanel:
             leaderboard_text += line
 
         embed.add_field(
-            name="🏆 Ranking de Carteiras",
-            value=leaderboard_text or "Nenhum usuário encontrado",
+            name="🏆 **RANKING DE CARTEIRAS**",
+            value=f"```diff\n+ CLASSIFICAÇÃO GERAL\n```{leaderboard_text or 'Nenhum usuário encontrado'}",
             inline=False,
         )
 
@@ -438,42 +446,19 @@ class WalletPanel:
                 avg_balance = total_ac // len(sorted_balances)
 
                 embed.add_field(
-                    name="📈 Distribuição de Riqueza",
+                    name="📈 **DISTRIBUIÇÃO DE RIQUEZA**",
                     value=(
-                        f"**Maior Carteira:** {sorted_balances[0]:,} AC\n"
-                        f"**Carteira Mediana:** {median_balance:,} AC\n"
-                        f"**Carteira Média:** {avg_balance:,} AC\n"
-                        f"**Menor Carteira:** {sorted_balances[-1]:,} AC"
+                        f"```yaml\n- ANÁLISE ESTATÍSTICA -\n```"
+                        f"🥇 **Maior Carteira:** `{sorted_balances[0]:,} AC`\n"
+                        f"📊 **Carteira Mediana:** `{median_balance:,} AC`\n"
+                        f"📉 **Carteira Média:** `{avg_balance:,} AC`\n"
+                        f"🔻 **Menor Carteira:** `{sorted_balances[-1]:,} AC`"
                     ),
                     inline=True,
                 )
 
-        # Últimas atividades
-        recent_active = sorted(
-            [entry for entry in wallet_data if entry.balance > 0],
-            key=lambda x: x.last_activity,
-            reverse=True,
-        )[:5]
-
-        if recent_active:
-            activity_text = ""
-            for entry in recent_active:
-                days_ago = (datetime.now(timezone.utc) - entry.last_activity).days
-                if days_ago == 0:
-                    activity_str = "hoje"
-                elif days_ago == 1:
-                    activity_str = "ontem"
-                else:
-                    activity_str = f"{days_ago} dias atrás"
-
-                activity_text += f"👤 **{entry.display_name}** - {activity_str}\n"
-
-            embed.add_field(
-                name="🕐 Atividade Recente", value=activity_text, inline=True
-            )
-
         embed.set_footer(
-            text="ARCA Bot | Painel atualizado automaticamente",
+            text="🎮 ARCA Organization | Painel atualizado automaticamente a cada 5 minutos",
             icon_url=self.bot.user.avatar.url if self.bot.user.avatar else None,
         )
 
