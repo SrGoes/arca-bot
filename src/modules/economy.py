@@ -123,6 +123,13 @@ class EconomySystem:
             return True
         return False
 
+    def refund_coins(self, user_id: int, amount: int, reason: str = ""):
+        """Reembolsa moedas ao usuário sem afetar o total_earned"""
+        user_data = self.get_user_data(user_id)
+        user_data["balance"] += amount
+        self.save_data()
+        logger.info(f"Reembolsados {amount} AC para usuário {user_id}. Motivo: {reason}")
+
     def get_balance(self, user_id: int) -> int:
         """Obtém saldo do usuário"""
         return self.get_user_data(user_id)["balance"]

@@ -989,7 +989,7 @@ class AdminLotteryView(discord.ui.View):
             total_refunded = 0
             for user_id, tickets in self.lottery_data["participants"].items():
                 user_total = sum(ticket["price"] for ticket in tickets)
-                self.lottery_system.economy.add_coins(
+                self.lottery_system.economy.refund_coins(
                     int(user_id),
                     user_total,
                     f"Reembolso do sorteio cancelado: {self.lottery_data['name']}",
