@@ -10,9 +10,28 @@ Autor: ARCA Organization
 Licença: MIT
 """
 
+# Correção SSL para AWS Windows - DEVE ser no início
+import os
+try:
+    import ssl
+    import certifi
+    
+    # Configurar SSL para AWS Windows
+    cert_file = certifi.where()
+    os.environ['SSL_CERT_FILE'] = cert_file
+    os.environ['REQUESTS_CA_BUNDLE'] = cert_file
+    os.environ['CURL_CA_BUNDLE'] = cert_file
+    
+    # Configurar contexto SSL padrão
+    ssl_context = ssl.create_default_context(cafile=cert_file)
+    ssl._create_default_https_context = lambda: ssl_context
+    
+except Exception:
+    # Fallback: desabilitar verificação SSL (menos seguro)
+    os.environ['PYTHONHTTPSVERIFY'] = '0'
+
 import discord
 from discord.ext import commands
-import os
 import logging
 from datetime import datetime, timezone
 from typing import Optional
