@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 
 echo "Verificando Python..."
 if ! command -v python3 &> /dev/null; then
-    echo "❌ Python não encontrado! Por favor, instale Python 3.8 ou superior."
+    echo "❌ Python não encontrado! Por favor, instale Python 3.13 ou superior."
     exit 1
 fi
 

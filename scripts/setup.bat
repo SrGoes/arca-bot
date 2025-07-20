@@ -8,7 +8,7 @@ cd /d "%~dp0.."
 echo Verificando Python...
 python --version
 if %errorlevel% neq 0 (
-    echo ❌ Python não encontrado! Por favor, instale Python 3.8 ou superior.
+    echo ❌ Python não encontrado! Por favor, instale Python 3.13 ou superior.
     pause
     exit /b 1
 )
