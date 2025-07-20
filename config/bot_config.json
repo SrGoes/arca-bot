@@ -1,10 +1,10 @@
 {
   "economy": {
     "voice_channels_category": "C.O.M.M.S OPS",
-    "ac_per_hour": 20,
-    "daily_reward_min": 70,
-    "daily_reward_max": 100,
-    "admin_role_name": "ECONOMIA_ADMIN",
+    "ac_per_hour": 4,
+    "daily_reward_min": 5,
+    "daily_reward_max": 5,
+    "admin_role_name": "Conselho Administrativo",
     "min_voice_time_for_reward": 3,
     "max_restart_time_for_recovery": 15,
     "rate_limit_daily": 1,
@@ -12,13 +12,13 @@
     "delete_admin_commands": true,
     "message_reward_enabled": true,
     "messages_for_reward": 12,
-    "message_reward_min": 1,
-    "message_reward_max": 40,
-    "message_reward_cooldown": 45,
+    "message_reward_min": 5,
+    "message_reward_max": 5,
+    "message_reward_cooldown": 720,
     "send_voice_summary_dm": true
   },
   "lottery": {
-    "admin_role_name": "SORTEIO_ADMIN",
+    "admin_role_name": "Conselho Administrativo",
     "channel_name": "sorteios",
     "max_ticket_price_multiplier": 2.0,
     "rate_limit_buy": 10,
@@ -38,22 +38,16 @@
   },
   "permissions": {
     "admin_roles": [
-      "ADMIN",
-      "Administrador",
-      "Administrator"
+      "ADMIN"
     ],
     "moderator_roles": [
-      "MODERADOR",
-      "Moderator",
-      "MOD"
+      "MODERATOR"
     ],
     "economy_roles": [
-      "ECONOMIA_ADMIN",
-      "Economy Admin"
+      "ECONOMY_ADMIN"
     ],
     "lottery_roles": [
-      "SORTEIO_ADMIN",
-      "Lottery Admin"
+      "LOTTERY_ADMIN"
     ]
   },
   "cache": {
