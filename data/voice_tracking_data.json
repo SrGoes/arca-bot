@@ -1,0 +1,27 @@
+{
+  "activeSessions": {
+    "306978576929128460": {
+      "userId": "306978576929128460",
+      "channelId": "1395206018153058384",
+      "channelName": "TESTE",
+      "guildId": "142665303891902464",
+      "startTime": "2025-08-01T19:57:36.927Z",
+      "lastActivity": "2025-08-01T20:00:36.950Z",
+      "totalMinutes": 0,
+      "acEarned": 1,
+      "isActive": true
+    }
+  },
+  "absentUsers": {},
+  "channelStatuses": {
+    "1395206018153058384": {
+      "channelId": "1395206018153058384",
+      "messageId": "1400931253003358290",
+      "lastUpdate": "2025-08-01T20:00:38.043Z",
+      "activeUsers": [
+        "306978576929128460"
+      ]
+    }
+  },
+  "lastSave": "2025-08-01T20:00:38.043Z"
+}
