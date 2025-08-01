@@ -5,7 +5,7 @@ import { logger } from "#settings";
 interface OldUserData {
     created_at: string;
     updated_at: string;
-    user_id: number;
+    user_id: number | string; // Pode vir como number ou string
     balance: number;
     total_earned: number;
     total_spent: number;
@@ -62,8 +62,13 @@ export class DataMigration {
                 return;
             }
 
-            // Carregar dados antigos
+            // Carregar dados antigos como string primeiro para extrair IDs corretos
             const oldDataRaw = readFileSync(this.oldDataPath, "utf8");
+            
+            // Extrair IDs corretamente do JSON usando regex
+            const correctIds = this.extractUserIdsFromJson(oldDataRaw);
+            logger.log(`🔍 IDs extraídos do JSON: ${correctIds.join(', ')}`);
+            
             const oldData: OldDataStructure = JSON.parse(oldDataRaw);
 
             // Carregar dados atuais (se existir)
@@ -77,20 +82,31 @@ export class DataMigration {
             let migratedCount = 0;
             let skippedCount = 0;
             let updatedCount = 0;
+            let idIndex = 0;
 
             // Migrar cada usuário
             for (const [, oldUser] of Object.entries(oldData.user)) {
-                const userIdString = String(oldUser.user_id);
+                // Usar o ID correto extraído do JSON
+                const userIdString = correctIds[idIndex++] || String(oldUser.user_id);
+                
+                // Debug logs
+                logger.log(`🔍 Processando usuário: ${userIdString}`);
+                logger.log(`📄 Dados originais - user_id: ${oldUser.user_id} (tipo: ${typeof oldUser.user_id})`);
+                logger.log(`📄 ID correto extraído: ${userIdString}`);
 
                 // Verificar se o usuário já existe
                 const userExists = currentData[userIdString];
+                logger.log(`🔎 Usuário existe no sistema atual? ${userExists ? 'SIM' : 'NÃO'}`);
                 
                 if (userExists) {
+                    logger.log(`📊 Dados atuais - balance: ${userExists.balance}, totalEarned: ${userExists.totalEarned}`);
+                    logger.log(`📊 Dados migração - balance: ${oldUser.balance}, totalEarned: ${oldUser.total_earned}`);
+                    
                     // Atualizar dados existentes apenas se os dados antigos forem mais recentes ou maiores
                     const shouldUpdate = this.shouldUpdateExistingUser(userExists, oldUser);
                     
                     if (shouldUpdate) {
-                        currentData[userIdString] = this.convertUserData(oldUser);
+                        currentData[userIdString] = this.convertUserData(oldUser, userIdString);
                         updatedCount++;
                         logger.log(`🔄 Atualizado usuário: ${userIdString}`);
                     } else {
@@ -99,7 +115,7 @@ export class DataMigration {
                     }
                 } else {
                     // Novo usuário
-                    currentData[userIdString] = this.convertUserData(oldUser);
+                    currentData[userIdString] = this.convertUserData(oldUser, userIdString);
                     migratedCount++;
                     logger.log(`✅ Migrado novo usuário: ${userIdString}`);
                 }
@@ -122,11 +138,85 @@ export class DataMigration {
     }
 
     /**
+     * Extrai IDs de usuário corretamente do JSON bruto usando regex
+     */
+    private extractUserIdsFromJson(jsonString: string): string[] {
+        const userIdRegex = /"user_id":\s*(\d+)/g;
+        const ids: string[] = [];
+        let match;
+        
+        while ((match = userIdRegex.exec(jsonString)) !== null) {
+            ids.push(match[1]);
+        }
+        
+        return ids;
+    }
+
+    /**
+     * Remove IDs corrompidos (como 306978576929128450) mantendo apenas os corretos
+     */
+    async cleanCorruptedIds(): Promise<void> {
+        try {
+            if (!existsSync(this.newDataPath)) {
+                logger.log("📄 Nenhum arquivo de economia encontrado para limpar.");
+                return;
+            }
+
+            const currentDataRaw = readFileSync(this.newDataPath, "utf8");
+            const currentData: Record<string, NewUserEconomy> = JSON.parse(currentDataRaw);
+            
+            // IDs conhecidos corrompidos (terminam em 50 ao invés de 60)
+            const corruptedPattern = /(\d+)50$/;
+            const cleanedData: Record<string, NewUserEconomy> = {};
+            let removedCount = 0;
+
+            for (const [userId, userData] of Object.entries(currentData)) {
+                const match = userId.match(corruptedPattern);
+                
+                if (match) {
+                    // ID corrompido - tentar encontrar o correto
+                    const basePart = match[1];
+                    const possibleCorrectId = basePart + "60";
+                    
+                    logger.log(`🧹 ID corrompido encontrado: ${userId}`);
+                    logger.log(`🔍 Possível ID correto: ${possibleCorrectId}`);
+                    
+                    // Verificar se já existe o ID correto
+                    if (currentData[possibleCorrectId]) {
+                        logger.log(`⚠️ ID correto já existe, removendo o corrompido`);
+                        removedCount++;
+                        continue; // Pular o corrompido
+                    } else {
+                        // Corrigir o ID
+                        userData.userId = possibleCorrectId;
+                        cleanedData[possibleCorrectId] = userData;
+                        logger.log(`✅ ID corrigido: ${userId} → ${possibleCorrectId}`);
+                    }
+                } else {
+                    // ID não corrompido, manter
+                    cleanedData[userId] = userData;
+                }
+            }
+
+            // Salvar dados limpos
+            writeFileSync(this.newDataPath, JSON.stringify(cleanedData, null, 2));
+            
+            logger.success(`🧹 Limpeza concluída!`);
+            logger.success(`   - IDs corrompidos removidos: ${removedCount}`);
+            logger.success(`   - Total de usuários: ${Object.keys(cleanedData).length}`);
+
+        } catch (error) {
+            logger.error("❌ Erro durante a limpeza:", error);
+            throw error;
+        }
+    }
+
+    /**
      * Converte dados do formato antigo para o novo
      */
-    private convertUserData(oldUser: OldUserData): NewUserEconomy {
+    private convertUserData(oldUser: OldUserData, userIdString: string): NewUserEconomy {
         return {
-            userId: String(oldUser.user_id),
+            userId: userIdString,
             balance: oldUser.balance || 0,
             lastDaily: oldUser.last_daily,
             totalEarned: oldUser.total_earned || 0,
@@ -140,12 +230,19 @@ export class DataMigration {
      * Determina se deve atualizar um usuário existente
      */
     private shouldUpdateExistingUser(existingUser: NewUserEconomy, oldUser: OldUserData): boolean {
-        // Atualizar se os dados antigos têm mais moedas ou estatísticas maiores
-        return (
-            oldUser.balance > existingUser.balance ||
-            oldUser.total_earned > existingUser.totalEarned ||
-            oldUser.message_count > existingUser.messageCount
-        );
+        const balanceCondition = oldUser.balance > existingUser.balance;
+        const earnedCondition = oldUser.total_earned > existingUser.totalEarned;
+        const messageCondition = oldUser.message_count > existingUser.messageCount;
+        
+        logger.log(`🔍 Verificação de update:`);
+        logger.log(`   Balance: ${oldUser.balance} > ${existingUser.balance} = ${balanceCondition}`);
+        logger.log(`   Earned: ${oldUser.total_earned} > ${existingUser.totalEarned} = ${earnedCondition}`);
+        logger.log(`   Messages: ${oldUser.message_count} > ${existingUser.messageCount} = ${messageCondition}`);
+        
+        const shouldUpdate = balanceCondition || earnedCondition || messageCondition;
+        logger.log(`   Resultado: ${shouldUpdate ? 'ATUALIZAR' : 'MANTER'}`);
+        
+        return shouldUpdate;
     }
 
     /**
