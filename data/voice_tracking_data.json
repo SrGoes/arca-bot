@@ -6,9 +6,9 @@
       "channelName": "TESTE",
       "guildId": "142665303891902464",
       "startTime": "2025-08-01T19:57:36.927Z",
-      "lastActivity": "2025-08-01T20:06:36.973Z",
+      "lastActivity": "2025-08-01T20:12:52.581Z",
       "totalMinutes": 0,
-      "acEarned": 3,
+      "acEarned": 5,
       "isActive": true
     }
   },
@@ -16,12 +16,12 @@
   "channelStatuses": {
     "1395206018153058384": {
       "channelId": "1395206018153058384",
-      "messageId": "1400933013465989221",
-      "lastUpdate": "2025-08-01T20:07:37.803Z",
+      "messageId": "1400934841389940756",
+      "lastUpdate": "2025-08-01T20:14:53.541Z",
       "activeUsers": [
         "306978576929128460"
       ]
     }
   },
-  "lastSave": "2025-08-01T20:07:37.803Z"
+  "lastSave": "2025-08-01T20:14:53.541Z"
 }

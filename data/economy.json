@@ -1,17 +1,18 @@
 {
   "306978576929128460": {
     "userId": "306978576929128460",
-    "balance": 2250,
+    "balance": 52,
     "lastDaily": "2025-08-01T16:42:09.871Z",
-    "totalEarned": 3450,
-    "totalSpent": 1200,
+    "totalEarned": 3652,
+    "totalSpent": 3600,
     "messageCount": 0
   },
   "124885660510322688": {
     "userId": "124885660510322688",
-    "balance": 1672,
+    "balance": 2072,
     "lastDaily": "2025-08-01T16:45:58.887Z",
-    "totalEarned": 1672,
-    "totalSpent": 0
+    "totalEarned": 2072,
+    "totalSpent": 0,
+    "messageCount": 0
   }
 }
