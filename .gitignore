@@ -97,3 +97,9 @@ docker-compose.override.yml
 # === OUTROS ===
 .eslintcache
 .parcel-cache
+
+# === MIGRAÇÃO ===
+migration_data.json
+temp_migration_data.json
+migration/*.json
+!migration/exemplo_user_data.json

@@ -1,22 +1,5 @@
 // Configurações do Sistema de Economia - Arca Bot
 export const EconomyConfig = {
-    // === RECOMPENSAS POR CALL DE VOZ ===
-    voiceRewards: {
-        // Intervalo entre recompensas (em minutos)
-        rewardIntervalMinutes: 5,
-        // Valor mínimo da recompensa por intervalo
-        rewardMin: 50,
-        // Valor máximo da recompensa por intervalo
-        rewardMax: 150,
-        // Tempo mínimo na call para começar a receber recompensas (em minutos)
-        minimumTimeForReward: 2,
-        // ID da categoria do Discord onde as calls vão ter recompensas
-        // Para pegar o ID: Clique com botão direito na categoria > Copiar ID
-        rewardCategoryId: "", // Substitua pelo ID da categoria desejada
-        // Canais específicos para recompensas (deixe vazio para usar toda a categoria)
-        specificChannelIds: [] as string[],
-    },
-
     // === RECOMPENSAS DIÁRIAS ===
     daily: {
         // Valor fixo da recompensa diária
@@ -129,29 +112,6 @@ export const EconomyConfig = {
         },
     },
 };
-
-// Função helper para calcular recompensa por call de voz
-export function calculateVoiceReward(): number {
-    const { rewardMin, rewardMax } = EconomyConfig.voiceRewards;
-    return Math.floor(Math.random() * (rewardMax - rewardMin + 1)) + rewardMin;
-}
-
-// Função helper para validar se um canal deve ter recompensas de voz
-export function shouldChannelHaveVoiceRewards(channelId: string, categoryId: string | null): boolean {
-    const { rewardCategoryId, specificChannelIds } = EconomyConfig.voiceRewards;
-    
-    // Se há canais específicos configurados, verificar se está na lista
-    if (specificChannelIds.length > 0) {
-        return specificChannelIds.includes(channelId);
-    }
-    
-    // Senão, verificar se está na categoria configurada
-    if (rewardCategoryId && categoryId) {
-        return categoryId === rewardCategoryId;
-    }
-    
-    return false;
-}
 
 // Função helper para calcular recompensa diária
 export function calculateDailyReward(): number {

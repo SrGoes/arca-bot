@@ -427,7 +427,7 @@ async function sendExitSummaryDM(member: GuildMember, session: any, wasAbsent: b
         const timeStr = VoiceConfig.helpers.formatDuration(session.totalMinutes);
         
         const embed = new EmbedBuilder()
-            .setTitle(wasAbsent ? VoiceConfig.messages.absenceTitle : VoiceConfig.messages.exitSummaryTitle)
+            .setTitle(VoiceConfig.messages.exitSummaryTitle)
             .setDescription(`Olá **${member.displayName}**! Aqui está o resumo da sua participação na call:`)
             .setColor(wasAbsent ? VoiceConfig.colors.absence : VoiceConfig.colors.voice)
             .setTimestamp()
@@ -463,10 +463,14 @@ export async function recoverVoiceSessions(client: any): Promise<void> {
 
         // Verificar sessões ativas
         for (const session of Object.values(data.activeSessions)) {
-            try {
-                const guild = client.guilds.cache.get(session.guildId);
-                if (!guild) continue;
+            const guild = client.guilds.cache.get(session.guildId);
+            if (!guild) {
+                voiceTrackingStore.endSession(session.userId);
+                cleanedSessions++;
+                continue;
+            }
 
+            try {
                 const channel = guild.channels.cache.get(session.channelId);
                 if (!channel || !VoiceConfig.helpers.isValidVoiceChannel(channel)) {
                     voiceTrackingStore.endSession(session.userId);
@@ -481,20 +485,11 @@ export async function recoverVoiceSessions(client: any): Promise<void> {
                     continue;
                 }
 
-                // Verificar se o restart foi recente o suficiente para recuperar
-                const sessionStart = new Date(session.startTime);
-                const minutesSinceStart = (Date.now() - sessionStart.getTime()) / (1000 * 60);
-                
-                if (VoiceConfig.helpers.canRecoverSession(minutesSinceStart)) {
-                    // Reativar sistema de recompensas
-                    startRewardInterval(session.userId);
-                    recoveredSessions++;
-                    if (VoiceConfig.verboseLogs) {
-                        logger.log(`[VOICE] Sessão recuperada: ${member.displayName} em ${channel.name}`);
-                    }
-                } else {
-                    voiceTrackingStore.endSession(session.userId);
-                    cleanedSessions++;
+                // Reativar sistema de recompensas para todas as sessões existentes
+                startRewardInterval(session.userId);
+                recoveredSessions++;
+                if (VoiceConfig.verboseLogs) {
+                    logger.log(`[VOICE] Sessão recuperada: ${member.displayName} em ${channel.name}`);
                 }
             } catch (error) {
                 logger.error(`Erro ao recuperar sessão ${session.userId}:`, error);

@@ -2,7 +2,7 @@ import { createCommand } from "#base";
 import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { voiceTrackingStore } from "#database";
 import { VoiceConfig } from "../../../settings/voiceConfig.js";
-import { isUserAdmin } from "../../../settings/economyConfig.js";
+import { isUserAdmin, EconomyConfig } from "../../../settings/economyConfig.js";
 
 createCommand({
     name: "voice-status",
@@ -54,11 +54,14 @@ createCommand({
                 case "active":
                     await showActiveSessions(interaction);
                     break;  
-                case "absent":
-                    await showAbsentUsers(interaction);
-                    break;
                 case "cleanup":
                     await performCleanup(interaction);
+                    break;
+                default:
+                    await interaction.reply({
+                        content: "⚠️ Opção não disponível. O sistema de ausência foi removido.",
+                        ephemeral: true
+                    });
                     break;
             }
         } catch (error) {
@@ -79,7 +82,7 @@ async function showGeneralStatus(interaction: any): Promise<void> {
     const embed = new EmbedBuilder()
         .setTitle("🎤 Status do Sistema de Voice Tracking")
         .setDescription("**Visão geral do sistema ARCA Voice Tracking**")
-        .setColor(VoiceConfig.colors.info)
+        .setColor(parseInt(EconomyConfig.colors.info.replace('#', ''), 16))
         .setTimestamp()
         .addFields(
             {
@@ -97,7 +100,6 @@ async function showGeneralStatus(interaction: any): Promise<void> {
                 value: [
                     `💰 **AC por Hora:** ${VoiceConfig.rewards.acPerHour}`,
                     `⏱️ **Tempo Mín. Recompensa:** ${VoiceConfig.rewards.minTimeForReward} min`,
-                    `⏸️ **Limite Ausência:** ${VoiceConfig.absence.maxAbsenceMinutes} min`,
                     `📂 **Categoria:** ${VoiceConfig.voiceChannelsCategory}`
                 ].join("\n"),
                 inline: false
@@ -135,7 +137,7 @@ async function showActiveSessions(interaction: any): Promise<void> {
 
     const embed = new EmbedBuilder()
         .setTitle("🎤 Sessões Ativas")
-        .setColor(VoiceConfig.colors.active)
+        .setColor(parseInt(EconomyConfig.colors.success.replace('#', ''), 16))
         .setTimestamp();
 
     if (activeSessions.length === 0) {
@@ -170,45 +172,6 @@ async function showActiveSessions(interaction: any): Promise<void> {
     await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
-async function showAbsentUsers(interaction: any): Promise<void> {
-    const absentUsers = voiceTrackingStore.getAllAbsentUsers();
-
-    const embed = new EmbedBuilder()
-        .setTitle("⏸️ Usuários Ausentes")
-        .setColor(VoiceConfig.colors.warning)
-        .setTimestamp();
-
-    if (absentUsers.length === 0) {
-        embed.setDescription("Nenhum usuário ausente no momento.");
-        await interaction.reply({ embeds: [embed], ephemeral: true });
-        return;
-    }
-
-    const absentList = absentUsers.map(absentUser => {
-        // Sistema de ausência removido - valores zerados
-        const absenceDuration = 0;
-        const remainingTime = 0;
-        const timeStr = VoiceConfig.helpers.formatDuration(absenceDuration);
-        const remainingStr = VoiceConfig.helpers.formatDuration(Math.max(0, remainingTime));
-        
-        return [
-            `• <@${absentUser.userId}> - **${absentUser.channelName}**`,
-            `  ⏱️ Ausente há: ${timeStr}`,
-            `  ⏰ Restam: ${remainingStr}`,
-            `  💰 AC antes da ausência: ${absentUser.acEarnedBeforeAbsence}`
-        ].join("\n");
-    }).join("\n\n");
-
-    embed.setDescription(`**${absentUsers.length} usuários ausentes**\n\n${absentList}`);
-    embed.addFields({
-        name: "ℹ️ Informação",
-        value: `Usuários ausentes por mais de ${VoiceConfig.absence.maxAbsenceMinutes} minutos terão suas sessões finalizadas automaticamente.`,
-        inline: false
-    });
-
-    await interaction.reply({ embeds: [embed], ephemeral: true });
-}
-
 async function performCleanup(interaction: any): Promise<void> {
     try {
         voiceTrackingStore.cleanup();
@@ -216,7 +179,7 @@ async function performCleanup(interaction: any): Promise<void> {
         const embed = new EmbedBuilder()
             .setTitle("🧹 Limpeza Executada")
             .setDescription("Limpeza do sistema de voice tracking executada com sucesso!")
-            .setColor(VoiceConfig.colors.success)
+            .setColor(parseInt(EconomyConfig.colors.success.replace('#', ''), 16))
             .setTimestamp()
             .addFields({
                 name: "📋 Ações Executadas",
