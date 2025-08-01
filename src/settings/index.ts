@@ -9,6 +9,7 @@ export * from "./economyConfig.js";
 export * from "./voiceConfig.js";
 export * from "./gracefulShutdown.js";
 export * from "./backupSystem.js";
+export * from "./healthCheck.js";
 
 const env = validateEnv(envSchema);
 

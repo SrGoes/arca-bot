@@ -10,7 +10,12 @@
     "watch": "tsx --watch --env-file .env ./src/index.ts",
     "watch:dev": "tsx --watch --env-file .env.dev ./src/index.ts",
     "start": "node --env-file .env .",
-    "start:dev": "node --env-file .env.dev ."
+    "start:dev": "node --env-file .env.dev .",
+    "start:prod": "node --env-file .env build/index.js",
+    "docker:build": "docker build -t arca-bot .",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
   },
   "dependencies": {
     "@magicyan/discord": "1.4.11",

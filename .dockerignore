@@ -1,0 +1,13 @@
+# Seguindo a documentação oficial da base Constatic
+build
+node_modules
+
+# Adicional para otimização
+.git
+.gitignore
+.vscode
+*.md
+.env*
+data
+.dockerignore
+Dockerfile

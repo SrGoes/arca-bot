@@ -1,0 +1,36 @@
+# Health check script para monitoramento
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instalar curl para health checks
+RUN apk add --no-cache curl
+
+# Copiar dependências
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copiar código e compilar
+COPY . .
+RUN npm run build
+
+# Criar diretório de dados
+RUN mkdir -p data
+
+# Script de health check
+RUN echo '#!/bin/sh\n\
+if [ -f "/app/data/health.json" ]; then\n\
+  exit 0\n\
+else\n\
+  exit 1\n\
+fi' > /app/healthcheck.sh && chmod +x /app/healthcheck.sh
+
+# Configurar health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD /app/healthcheck.sh
+
+# Expor porta para health checks
+EXPOSE 3000
+
+# Comando de inicialização
+CMD ["npm", "start"]

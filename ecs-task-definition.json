@@ -1,0 +1,78 @@
+{
+  "family": "arca-bot",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "arca-bot",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/arca-bot:latest",
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/arca-bot",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        {
+          "name": "LOG_LEVEL",
+          "value": "3"
+        },
+        {
+          "name": "VOICE_DEBUG",
+          "value": "false"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "BOT_TOKEN",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:arca-bot/discord-token"
+        },
+        {
+          "name": "WEBHOOK_LOGS_URL",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:arca-bot/webhook-url"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "efs-data",
+          "containerPath": "/app/data",
+          "readOnly": false
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "test -f /app/data/health.json || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "efs-data",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-XXXXXXXX",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "accessPointId": "fsap-XXXXXXXX",
+          "iam": "ENABLED"
+        }
+      }
+    }
+  ]
+}

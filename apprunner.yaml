@@ -1,0 +1,19 @@
+version: 1.0
+runtime: nodejs20
+build:
+  commands:
+    build:
+      - echo "🔄 Instalando dependências..."
+      - npm install
+      - echo "🏗️  Compilando TypeScript..."
+      - npm run build
+      - echo "📁 Criando diretório de dados..."
+      - mkdir -p data/backups
+run:
+  runtime-version: 20
+  command: npm start
+  network:
+    port: 3000
+  env:
+    - name: NODE_ENV
+      value: "production"
