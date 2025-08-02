@@ -14,9 +14,9 @@ export const VoiceConfig = {
     // === RECOMPENSAS ===
     rewards: {
         // AC por hora de permanência em call
-        acPerHour: 20,
+        acPerHour: 4,
         // Tempo mínimo para começar a receber recompensas (em minutos)
-        minTimeForReward: 3,
+        minTimeForReward: 1,
         // Intervalo para atualização de recompensas (em minutos)
         rewardInterval: 1,
     },

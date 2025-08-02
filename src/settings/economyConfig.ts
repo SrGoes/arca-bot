@@ -3,22 +3,22 @@ export const EconomyConfig = {
     // === RECOMPENSAS DIÁRIAS ===
     daily: {
         // Valor fixo da recompensa diária
-        baseAmount: 1000,
+        baseAmount: 0,
         // Valor aleatório adicional (min-max)
-        bonusMin: 100,
-        bonusMax: 600,
+        bonusMin: 1,
+        bonusMax: 10,
     },
 
     // === RECOMPENSAS POR MENSAGEM ===
     messages: {
         // Número de mensagens necessárias para ganhar recompensa
-        messagesForReward: 10,
+        messagesForReward: 12,
         // Valor mínimo da recompensa por mensagem
-        rewardMin: 25,
+        rewardMin: 5,
         // Valor máximo da recompensa por mensagem
-        rewardMax: 75,
+        rewardMax: 5,
         // Cooldown entre recompensas (em minutos)
-        cooldownMinutes: 5,
+        cooldownMinutes: 720,
         // Tamanho mínimo da mensagem para contar (anti-spam)
         minMessageLength: 5,
     },
@@ -58,7 +58,7 @@ export const EconomyConfig = {
         // IDs dos usuários que podem usar comandos de admin (além dos cargos)
         // Para pegar o ID do usuário: Clique com botão direito no usuário > Copiar ID do Usuário
         adminUserIds: [
-            // "306978576929128460", // Exemplo: ID do usuário específico
+            "306978576929128460"
         ] as string[],
         // Se true, usa apenas os IDs configurados. Se false, também aceita permissão Administrator do Discord
         strictMode: false,

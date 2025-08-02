@@ -268,14 +268,12 @@ async function updateChannelStatusMessage(channel: any): Promise<void> {
     channelLocks.set(channel.id, true);
 
     try {
-        // Limpar mensagens antigas do bot
-        await cleanupOldStatusMessages(channel);
-
         // Obter usuários ativos no canal
         const activeUsers = getActiveUsersInChannel(channel);
 
         if (activeUsers.length === 0) {
-            // Canal vazio - remover status
+            // Canal vazio - limpar mensagens e remover status
+            await cleanupOldStatusMessages(channel);
             voiceTrackingStore.removeChannelStatus(channel.id);
             return;
         }
@@ -283,19 +281,52 @@ async function updateChannelStatusMessage(channel: any): Promise<void> {
         // Criar embed de status
         const embed = await createStatusEmbed(channel, activeUsers);
         
-        // Enviar nova mensagem
-        const message = await channel.send({ embeds: [embed] });
+        // Tentar recuperar mensagem existente
+        const channelStatus = voiceTrackingStore.getChannelStatus(channel.id);
+        let message = null;
         
-        // Salvar referência da mensagem
-        voiceTrackingStore.updateChannelStatus(
-            channel.id,
-            message.id,
-            activeUsers.map(user => user.id)
-        );
-
-        if (VoiceConfig.verboseLogs) {
-            logger.log(`[VOICE] Status atualizado para canal ${channel.name} (${activeUsers.length} usuários)`);
+        if (channelStatus?.messageId) {
+            try {
+                message = await channel.messages.fetch(channelStatus.messageId);
+                
+                // Verificar se a mensagem é muito antiga (10 minutos)
+                const messageAge = Date.now() - message.createdTimestamp;
+                const maxAge = VoiceConfig.statusMessages.maxMessageAge * 60 * 1000;
+                
+                if (messageAge > maxAge) {
+                    // Mensagem antiga - deletar e criar nova
+                    await message.delete();
+                    message = null;
+                }
+            } catch (error) {
+                // Mensagem não encontrada - criar nova
+                message = null;
+            }
         }
+        
+        if (message) {
+            // Editar mensagem existente
+            await message.edit({ embeds: [embed] });
+            if (VoiceConfig.verboseLogs) {
+                logger.log(`[VOICE] Status editado para canal ${channel.name} (${activeUsers.length} usuários)`);
+            }
+        } else {
+            // Limpar mensagens antigas e criar nova
+            await cleanupOldStatusMessages(channel);
+            message = await channel.send({ embeds: [embed] });
+            
+            // Salvar referência da nova mensagem
+            voiceTrackingStore.updateChannelStatus(
+                channel.id,
+                message.id,
+                activeUsers.map(user => user.id)
+            );
+            
+            if (VoiceConfig.verboseLogs) {
+                logger.log(`[VOICE] Nova mensagem de status criada para canal ${channel.name} (${activeUsers.length} usuários)`);
+            }
+        }
+
     } catch (error) {
         logger.error(`Erro ao atualizar status do canal ${channel.name}:`, error);
     } finally {

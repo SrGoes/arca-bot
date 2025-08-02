@@ -42,11 +42,6 @@ createCommand({
                     inline: true
                 },
                 {
-                    name: "⏰ Próxima Recompensa",
-                    value: `${10 - (messageCount % 10)} mensagens`,
-                    inline: true
-                },
-                {
                     name: "🎁 Diário",
                     value: economyStore.canClaimDaily(userId) 
                         ? "✅ Disponível! Use `/diario`" 
