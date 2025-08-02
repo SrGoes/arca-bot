@@ -7,6 +7,7 @@ import { validateEnv } from "./env.validate.js";
 export * from "./error.js";
 export * from "./economyConfig.js";
 export * from "./voiceConfig.js";
+export * from "./raffleConfig.js";
 export * from "./gracefulShutdown.js";
 export * from "./backupSystem.js";
 export * from "./healthCheck.js";

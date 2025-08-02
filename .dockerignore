@@ -1,13 +1,39 @@
-# Seguindo a documentação oficial da base Constatic
+# Dependências e build
 build
 node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Adicional para otimização
+# Git e versionamento
 .git
 .gitignore
+
+# IDEs e editores
 .vscode
+.idea
+*.swp
+*.swo
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Documentação
 *.md
+!README.md
+
+# Arquivos de configuração sensíveis
 .env*
+!.env.example
+
+# Dados e logs
 data
+logs
+coverage
+.nyc_output
+
+# Docker
 .dockerignore
-Dockerfile
+Dockerfile*
+docker-compose*

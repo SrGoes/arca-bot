@@ -2,19 +2,29 @@ version: '3.8'
 
 services:
   arca-bot:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: arca-bot
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
-      - NODE_OPTIONS=${NODE_OPTIONS}
-      - LOG_LEVEL=${LOG_LEVEL}
-      - VOICE_DEBUG=${VOICE_DEBUG}
-      - WEBHOOK_LOGS_URL=${WEBHOOK_LOGS_URL}
+      - NODE_OPTIONS=${NODE_OPTIONS:-}
+      - LOG_LEVEL=${LOG_LEVEL:-2}
+      - VOICE_DEBUG=${VOICE_DEBUG:-false}
+      - WEBHOOK_LOGS_URL=${WEBHOOK_LOGS_URL:-}
+      - NODE_ENV=production
     volumes:
       - ./data:/app/data
+      - bot-logs:/app/logs
     networks:
       - bot-network
+    healthcheck:
+      test: ["CMD-SHELL", "node -e 'process.exit(0)'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
   bot-network:
@@ -22,3 +32,4 @@ networks:
 
 volumes:
   bot-data:
+  bot-logs:

@@ -1,11 +1,14 @@
-# Seguindo a documentação oficial da base Constatic
-FROM docker.io/library/node:20
+# Dockerfile para desenvolvimento
+FROM docker.io/library/node:20-alpine
 
-WORKDIR /bot
+WORKDIR /app
+
+# Instalar dependências do sistema
+RUN apk add --no-cache git python3 make g++
 
 # Copiar arquivos de dependências
-COPY ./package*.json .
-RUN npm install
+COPY package*.json ./
+RUN npm ci --only=production
 
 # Copiar código fonte
 COPY . .
@@ -13,8 +16,16 @@ COPY . .
 # Compilar TypeScript
 RUN npm run build
 
-# Criar diretório de dados
-RUN mkdir -p data/backups
+# Copiar e configurar script de inicialização
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Criar diretório de dados com permissões corretas
+RUN mkdir -p data/backups logs && \
+    chown -R node:node /app
+
+# Usar usuário não-root
+USER node
 
 # Comando para iniciar o bot
-CMD [ "npm", "start" ]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -1,4 +1,20 @@
-# Health check script para monitoramento
+# Dockerfile para produção
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Instalar dependências de build
+RUN apk add --no-cache git python3 make g++
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+RUN npm ci
+
+# Copiar código e compilar
+COPY . .
+RUN npm run build
+
+# Imagem final
 FROM node:20-alpine
 
 WORKDIR /app
@@ -6,20 +22,20 @@ WORKDIR /app
 # Instalar curl para health checks
 RUN apk add --no-cache curl
 
-# Copiar dependências
+# Copiar dependências de produção
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --only=production && npm cache clean --force
 
-# Copiar código e compilar
-COPY . .
-RUN npm run build
+# Copiar build da imagem anterior
+COPY --from=builder /app/build ./build
 
-# Criar diretório de dados
-RUN mkdir -p data
+# Copiar arquivos necessários
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 
 # Script de health check
 RUN echo '#!/bin/sh\n\
-if [ -f "/app/data/health.json" ]; then\n\
+if pgrep -f "node.*build/index.js" > /dev/null; then\n\
   exit 0\n\
 else\n\
   exit 1\n\
@@ -29,8 +45,12 @@ fi' > /app/healthcheck.sh && chmod +x /app/healthcheck.sh
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD /app/healthcheck.sh
 
-# Expor porta para health checks
-EXPOSE 3000
+# Criar diretórios e configurar permissões
+RUN mkdir -p data logs && \
+    chown -R node:node /app
+
+# Usar usuário não-root
+USER node
 
 # Comando de inicialização
-CMD ["npm", "start"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

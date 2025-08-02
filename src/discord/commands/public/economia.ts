@@ -28,11 +28,21 @@ createCommand({
                     inline: false
                 },
                 {
+                    name: "🎰 **Sistema de Sorteios**",
+                    value: [
+                        "• Participe de sorteios criados por admins",
+                        "• Preço dos tickets aumenta progressivamente",
+                        "• Maior chance de ganhar com mais tickets"
+                    ].join("\n"),
+                    inline: false
+                },
+                {
                     name: "👑 **Comandos Admin**",
                     value: [
                         "`/pagar` - Dar moedas a um usuário",
                         "`/remover` - Remover moedas de um usuário",
-                        "`/distribuir` - Distribuir moedas para call inteira"
+                        "`/distribuir` - Distribuir moedas para call inteira",
+                        "`/sorteio criar` - Criar sorteios interativos"
                     ].join("\n"),
                     inline: false
                 },
